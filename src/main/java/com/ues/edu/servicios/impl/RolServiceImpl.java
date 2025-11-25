@@ -56,4 +56,6 @@ public class RolServiceImpl implements IRolService{
 		return rolRepo.buscarPorNombre(filtro);
 	}
 
+	
+
 }
