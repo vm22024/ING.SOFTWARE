@@ -1,18 +1,23 @@
 package com.ues.edu.modelo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
 
 @Entity
+@Table(name = "roles")
 @Data
-public class Rol {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer idRol;
-	@Column(nullable = false, unique = true)
-	private String nombre; // ADMIN, USER
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Rol implements GrantedAuthority {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String nombre; // "ROLE_ADMIN", "ROLE_USER"
+
+    @Override
+    public String getAuthority() { return nombre; }
 }
