@@ -60,7 +60,7 @@ public class DashboardController {
         long totalUsuarios = usuarioService.contarUsuarios();
         long totalPuertos = puertoService.contarPuertos();
         long totalCiudades = ciudadService.contarCiudades();
-        //long totalModelosBarco = modeloBarcoService.contarModelosBarco();
+        long totalModelosBarco = modeloBarcoService.contarModelosBarco();
         //long totalNavieras = navieraService.contarNavieras();
         long totalBarcos = barcoService.contarBarcos();
         //long totalCruceros = cruceroService.contarCruceros();
@@ -70,7 +70,7 @@ public class DashboardController {
         model.addAttribute("totalUsuarios", totalUsuarios);
         model.addAttribute("totalPuertos", totalPuertos);
         model.addAttribute("totalCiudades", totalCiudades);
-        //model.addAttribute("totalModelosBarco", totalModelosBarco);
+        model.addAttribute("totalModelosBarco", totalModelosBarco);
         //model.addAttribute("totalNavieras", totalNavieras);
         model.addAttribute("totalBarcos", totalBarcos);
         //model.addAttribute("totalCruceros", totalCruceros);
