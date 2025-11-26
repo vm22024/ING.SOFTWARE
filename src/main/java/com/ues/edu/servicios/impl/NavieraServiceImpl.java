@@ -1,6 +1,7 @@
 package com.ues.edu.servicios.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -44,4 +45,27 @@ public class NavieraServiceImpl implements INavieraService {
             return false;
         }
     }
+
+	@Override
+	public long contarNavieras() {
+		// TODO Auto-generated method stub
+		 return navieraRepo.count();
+	}
+
+	@Override
+	public Optional<Naviera> buscarPorNombre(String nombre) {
+		 return navieraRepo.findByNombreIgnoreCase(nombre);
+	}
+
+	@Override
+	public boolean existePorNombre(String nombre) {
+		// TODO Auto-generated method stub
+		return navieraRepo.existsByNombreIgnoreCase(nombre);
+    }
+	
+
+	@Override
+	public boolean existePorNombreExcluyendoId(String nombre, Integer id) {
+		 return navieraRepo.findByNombreAndIdNavieraNot(nombre, id).isPresent();
+	}
 }
