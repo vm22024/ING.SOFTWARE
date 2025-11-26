@@ -7,7 +7,7 @@ public interface ICRUD <T, ID>{
 
 	List<T> listar();
 
-	T leerPorId(Integer id);
+	T leerPorId(ID id);
 
 	boolean eliminar(ID id);
 }

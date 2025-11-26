@@ -1,45 +1,142 @@
 package com.ues.edu.controladores;
 
-import java.util.List;
+import com.ues.edu.modelo.Reserva;
+import com.ues.edu.servicios.ICruceroProgramadoService;
+import com.ues.edu.servicios.IPasajeroService;
+import com.ues.edu.servicios.IReservaService;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.ues.edu.modelo.Reserva;
-import com.ues.edu.servicios.IReservaService;
+import java.util.List;
 
-@RestController
-@RequestMapping("/api/reservas")
+@Controller
+@RequestMapping("/reservas")
 public class ReservaController {
 
     @Autowired
     private IReservaService reservaService;
 
+    @Autowired
+    private ICruceroProgramadoService cruceroService;
+
+    @Autowired
+    private IPasajeroService pasajeroService;
+
+    // ==========================================================
+    // LISTA
+    // ==========================================================
     @GetMapping
-    public ResponseEntity<List<Reserva>> listar() {
-        return ResponseEntity.ok(reservaService.listar());
+    public String listar(Model model) {
+        List<Reserva> reservas = reservaService.listar();
+        model.addAttribute("reservas", reservas);
+        model.addAttribute("titulo", "Reservas");
+        return "reservas/lista";
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Reserva> obtenerPorId(@PathVariable Integer id) {
-        return ResponseEntity.ok(reservaService.leerPorId(id));
+    // ==========================================================
+    // FORM NUEVO
+    // ==========================================================
+    @GetMapping("/nuevo")
+    public String nuevo(Model model) {
+        Reserva reserva = new Reserva();
+        cargarCombos(model);
+        model.addAttribute("reserva", reserva);
+        model.addAttribute("modo", "nuevo");
+        return "reservas/form";
     }
 
-    @PostMapping
-    public ResponseEntity<Reserva> guardar(@RequestBody Reserva reserva) {
-        return ResponseEntity.ok(reservaService.guardar(reserva));
+    // ==========================================================
+    // GUARDAR NUEVO
+    // ==========================================================
+    @PostMapping("/guardar")
+    public String guardar(@Valid @ModelAttribute("reserva") Reserva reserva,
+                          BindingResult result,
+                          Model model,
+                          RedirectAttributes ra) {
+
+        if (result.hasErrors()) {
+            cargarCombos(model);
+            model.addAttribute("modo", "nuevo");
+            return "reservas/form";
+        }
+
+        reservaService.guardar(reserva);
+        ra.addFlashAttribute("ok", "Reserva registrada correctamente.");
+        return "redirect:/reservas";
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Reserva> actualizar(@PathVariable Integer id, @RequestBody Reserva reserva) {
+    // ==========================================================
+    // FORM EDITAR
+    // ==========================================================
+    @GetMapping("/{id}/editar")
+    public String editar(@PathVariable("id") Integer id,
+                         Model model,
+                         RedirectAttributes ra) {
+
+        Reserva reserva = reservaService.leerPorId(id);
+
+        if (reserva == null) {
+            ra.addFlashAttribute("error", "No se encontró la reserva con ID: " + id);
+            return "redirect:/reservas";
+        }
+
+        cargarCombos(model);
+        model.addAttribute("reserva", reserva);
+        model.addAttribute("modo", "editar");
+
+        return "reservas/form";
+    }
+
+    // ==========================================================
+    // ACTUALIZAR
+    // ==========================================================
+    @PostMapping("/{id}/editar")
+    public String actualizar(@PathVariable("id") Integer id,
+                             @Valid @ModelAttribute("reserva") Reserva reserva,
+                             BindingResult result,
+                             Model model,
+                             RedirectAttributes ra) {
+
+        if (result.hasErrors()) {
+            cargarCombos(model);
+            model.addAttribute("modo", "editar");
+            return "reservas/form";
+        }
+
         reserva.setIdReserva(id);
-        return ResponseEntity.ok(reservaService.guardar(reserva));
+        reservaService.guardar(reserva);
+
+        ra.addFlashAttribute("ok", "Reserva actualizada correctamente.");
+        return "redirect:/reservas";
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        reservaService.eliminar(id);
-        return ResponseEntity.noContent().build();
+    // ==========================================================
+    // ELIMINAR
+    // ==========================================================
+    @PostMapping("/{id}/eliminar")
+    public String eliminar(@PathVariable("id") Integer id,
+                           RedirectAttributes ra) {
+
+        boolean eliminado = reservaService.eliminar(id);
+
+        ra.addFlashAttribute(eliminado ? "ok" : "error",
+                eliminado ? "Reserva eliminada correctamente."
+                          : "No se pudo eliminar la reserva. Puede tener dependencias.");
+
+        return "redirect:/reservas";
+    }
+
+    // ==========================================================
+    // CARGA DE COMBOS
+    // ==========================================================
+    private void cargarCombos(Model model) {
+        model.addAttribute("cruceros", cruceroService.listar());
+        model.addAttribute("pasajeros", pasajeroService.listar());
     }
 }
