@@ -64,7 +64,7 @@ public class DashboardController {
         //long totalNavieras = navieraService.contarNavieras();
         long totalBarcos = barcoService.contarBarcos();
         //long totalCruceros = cruceroService.contarCruceros();
-        //long totalPasajeros = pasajeroService.contarPasajeros();
+        long totalPasajeros = pasajeroService.contarPasajeros();
         long totalReservas = reservaService.contarReservas();
 
         model.addAttribute("totalUsuarios", totalUsuarios);
@@ -74,7 +74,7 @@ public class DashboardController {
         //model.addAttribute("totalNavieras", totalNavieras);
         model.addAttribute("totalBarcos", totalBarcos);
         //model.addAttribute("totalCruceros", totalCruceros);
-        //model.addAttribute("totalPasajeros", totalPasajeros);
+        model.addAttribute("totalPasajeros", totalPasajeros);
         model.addAttribute("totalReservas", totalReservas);
 
         return "dashboard/dashboard";
