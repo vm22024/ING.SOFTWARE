@@ -38,30 +38,45 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authProvider())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/css/**", "/js/**").permitAll()
-                .requestMatchers("/usuarios/**", "/roles/**", "/reportes/**", "/advertencias/**", "/registro-demeritos/**").hasRole("ADMIN")
-                .requestMatchers("/dashboard/**", "/estudiantes/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                
+                // 🔧 CORREGIDO: Rutas solo para ADMIN
+                .requestMatchers("/usuarios/nuevo", "/usuarios/editar/**", "/usuarios/eliminar/**", 
+                               "/roles/**", "/reportes/**").hasRole("ADMIN")
+                
+                // 🔧 CORREGIDO: Rutas para ADMIN y USER
+                .requestMatchers("/usuarios/lista", "/usuarios/ver/**").hasAnyRole("ADMIN", "USER")
+                
+                // Rutas del dashboard para usuarios autenticados
+                .requestMatchers("/dashboard/**").authenticated()
+                
+                // 🔧 AGREGADO: Rutas del sistema de cruceros
+                .requestMatchers("/barcos/**", "/navieras/**", "/cruceros/**", "/puertos/**", 
+                               "/ciudades/**", "/pasajeros/**", "/reservas/**", "/modelos-barco/**")
+                               .hasAnyRole("ADMIN", "USER")
+                
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
                 .loginPage("/login")
                 .permitAll()
                 .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login?error")
+                .failureUrl("/login?error=true")
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             );
 
         return http.build();
     }
+
 }
