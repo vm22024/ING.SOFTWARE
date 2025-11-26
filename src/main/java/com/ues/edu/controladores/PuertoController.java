@@ -43,7 +43,7 @@ public class PuertoController {
         List<Puerto> puertos = puertoService.listar();
         model.addAttribute("puertos", puertos);
         if (ok != null) model.addAttribute("ok", ok);
-        return "puerto/lista";
+        return "puertos/lista"; // ← CORREGIDO: era "puerto/lista"
     }
 
     // Nuevo
@@ -53,27 +53,39 @@ public class PuertoController {
         model.addAttribute("puerto", new Puerto());
         model.addAttribute("ciudades", ciudades);
         model.addAttribute("esEdicion", false);
-        return "puerto/form";
+        return "puertos/form"; // ← CORREGIDO: era "puerto/form"
     }
 
-    // Guardar nuevo
+    // Guardar nuevo - MÉTODO COMPLETAMENTE CORREGIDO
     @PostMapping
     public String guardar(@Valid @ModelAttribute("puerto") Puerto puerto,
                           BindingResult br,
                           Model model,
                           RedirectAttributes ra) {
 
+        // Siempre cargar ciudades para el formulario
+        List<Ciudad> ciudades = ciudadService.listar();
+        model.addAttribute("ciudades", ciudades);
+        model.addAttribute("esEdicion", false);
+
         if (br.hasErrors()) {
-            List<Ciudad> ciudades = ciudadService.listar();
-            model.addAttribute("ciudades", ciudades);
-            model.addAttribute("esEdicion", false);
-            return "puerto/form";
+            return "puertos/form"; // ← CORREGIDO: era "puerto/form"
         }
 
         try {
+            // Validar que se seleccionó una ciudad
+            if (puerto.getCiudad() == null || puerto.getCiudad().getIdCiudad() == null) {
+                br.rejectValue("ciudad", "ciudad.requerida", "Debe seleccionar una ciudad.");
+                return "puertos/form";
+            }
+
+            // Cargar la ciudad completa desde la base de datos
+            Ciudad ciudad = ciudadService.leerPorId(puerto.getCiudad().getIdCiudad());
+            puerto.setCiudad(ciudad);
+
             puertoService.guardar(puerto);
             ra.addFlashAttribute("ok", "Puerto guardado correctamente.");
-            return "redirect:/puerto";
+            return "redirect:/puertos"; // ← CORREGIDO: era "redirect:/puerto"
 
         } catch (IllegalArgumentException ex) {
             String msg = ex.getMessage() != null ? ex.getMessage() : "Datos inválidos.";
@@ -85,24 +97,15 @@ public class PuertoController {
             } else {
                 model.addAttribute("error", msg);
             }
-            List<Ciudad> ciudades = ciudadService.listar();
-            model.addAttribute("ciudades", ciudades);
-            model.addAttribute("esEdicion", false);
-            return "puerto/form";
+            return "puertos/form"; // ← CORREGIDO: era "puerto/form"
 
         } catch (DataIntegrityViolationException ex) {
             br.rejectValue("nombre", "nombre.duplicado", "Ya existe un puerto con ese nombre.");
-            List<Ciudad> ciudades = ciudadService.listar();
-            model.addAttribute("ciudades", ciudades);
-            model.addAttribute("esEdicion", false);
-            return "puerto/form";
+            return "puertos/form"; // ← CORREGIDO: era "puerto/form"
 
         } catch (Exception ex) {
             model.addAttribute("error", "Ocurrió un error inesperado. Inténtalo nuevamente.");
-            List<Ciudad> ciudades = ciudadService.listar();
-            model.addAttribute("ciudades", ciudades);
-            model.addAttribute("esEdicion", false);
-            return "puerto/form";
+            return "puertos/form"; // ← CORREGIDO: era "puerto/form"
         }
     }
 
@@ -115,14 +118,14 @@ public class PuertoController {
             model.addAttribute("puerto", puerto);
             model.addAttribute("ciudades", ciudades);
             model.addAttribute("esEdicion", true);
-            return "puertos/form";
+            return "puertos/form"; // ← Este ya estaba correcto
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
             return "redirect:/puertos";
         }
     }
 
-    // Actualizar
+    // Actualizar - MÉTODO CORREGIDO
     @PostMapping("/actualizar/{id}")
     public String actualizar(@PathVariable("id") Integer id,
                              @Valid @ModelAttribute("puerto") Puerto puerto,
@@ -133,12 +136,23 @@ public class PuertoController {
             Puerto existente = puertoService.leerPorId(id);
             puerto.setIdPuerto(id);
 
+            // Siempre cargar ciudades para el formulario
+            List<Ciudad> ciudades = ciudadService.listar();
+            model.addAttribute("ciudades", ciudades);
+            model.addAttribute("esEdicion", true);
+
             if (br.hasErrors()) {
-                List<Ciudad> ciudades = ciudadService.listar();
-                model.addAttribute("ciudades", ciudades);
-                model.addAttribute("esEdicion", true);
                 return "puertos/form";
             }
+
+            // Validar y cargar la ciudad
+            if (puerto.getCiudad() == null || puerto.getCiudad().getIdCiudad() == null) {
+                br.rejectValue("ciudad", "ciudad.requerida", "Debe seleccionar una ciudad.");
+                return "puertos/form";
+            }
+
+            Ciudad ciudad = ciudadService.leerPorId(puerto.getCiudad().getIdCiudad());
+            puerto.setCiudad(ciudad);
 
             puertoService.guardar(puerto);
             ra.addFlashAttribute("ok", "Puerto actualizado correctamente.");
