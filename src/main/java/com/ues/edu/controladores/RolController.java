@@ -20,7 +20,7 @@ public class RolController {
     public ResponseEntity<List<Rol>> listar() {
         return ResponseEntity.ok(rolService.listar());
     }
-
+/*
     @GetMapping("/{id}")
     public ResponseEntity<Rol> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(rolService.leerPorId(id));
@@ -41,5 +41,5 @@ public class RolController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         rolService.eliminar(id);
         return ResponseEntity.noContent().build();
-    }
+    }*/
 }

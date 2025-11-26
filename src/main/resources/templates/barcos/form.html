@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title th:text="${modo == 'nuevo'} ? 'Nuevo Barco' : 'Editar Barco'">Barco</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+<style>
+    body { background: linear-gradient(135deg,#f0f4f9,#d9e4f5); font-family: "Poppins",sans-serif; }
+    .card { border-radius: 1.2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 2rem; }
+    .card-header { background: linear-gradient(90deg,#0d6efd,#20c997); color:white; font-size:1.3rem; }
+    .form-label { font-weight:500; }
+    .btn-custom { border-radius: 2rem; padding: .4rem 1rem; }
+</style>
+</head>
+<body>
+
+<div class="container my-5">
+    <div class="card">
+
+        <div class="card-header" 
+             th:text="${modo == 'nuevo'} ? 'Registrar Barco' : 'Editar Barco'">Barco</div>
+
+        <div class="card-body p-4">
+
+            <!-- Mensajes flash -->
+            <div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <!-- Formulario -->
+            <form th:object="${barco}" method="post"
+             th:attr="action=${modo == 'nuevo'} ? '/barcos/guardar' : '/barcos/' + ${barco.idBarco} + '/editar'">
+
+                <!-- Nombre -->
+                <div class="mb-3">
+                    <label class="form-label">Nombre del barco</label>
+                    <input type="text" class="form-control" th:field="*{nombre}">
+                    <div class="text-danger" th:errors="*{nombre}" th:if="${#fields.hasErrors('nombre')}"></div>
+                </div>
+
+                <!-- Naviera -->
+                <div class="mb-3">
+                    <label class="form-label">Naviera</label>
+                    <select class="form-select" th:field="*{naviera}">
+                        <option value="" disabled>-- Seleccione --</option>
+                        <option th:each="n : ${navieras}" 
+                                th:value="${n.idNaviera}" 
+                                th:text="${n.nombre}">
+                        </option>
+                    </select>
+                    <div class="text-danger" th:errors="*{naviera}" th:if="${#fields.hasErrors('naviera')}"></div>
+                </div>
+
+                <!-- Modelo -->
+                <div class="mb-3">
+                    <label class="form-label">Modelo</label>
+                    <select class="form-select" th:field="*{modelo}">
+                        <option value="" disabled>-- Seleccione --</option>
+                        <option th:each="m : ${modelos}" 
+                                th:value="${m.idModelo}" 
+                                th:text="${m.nombre}">
+                        </option>
+                    </select>
+                    <div class="text-danger" th:errors="*{modelo}" th:if="${#fields.hasErrors('modelo')}"></div>
+                </div>
+
+                <!-- Año construcción -->
+                <div class="mb-3">
+                    <label class="form-label">Año de construcción</label>
+                    <input type="number" class="form-control" th:field="*{anioConstruccion}">
+                </div>
+
+                <!-- Botones -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary btn-custom"
+                        th:text="${modo == 'nuevo'} ? 'Guardar' : 'Actualizar'">Guardar</button>
+
+                    <a th:href="@{/barcos}" class="btn btn-secondary btn-custom ms-2">Volver</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

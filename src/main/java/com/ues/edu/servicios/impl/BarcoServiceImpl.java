@@ -39,6 +39,7 @@ public class BarcoServiceImpl implements IBarcoService {
 	@Override
 	public boolean eliminar(Integer id) {
 		if (barcoRepo.existsById(id)) {
+			barcoRepo.deleteById(id);
 			return true;
 		} else {
 			return false;
