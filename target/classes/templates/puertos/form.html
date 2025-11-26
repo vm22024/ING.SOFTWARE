@@ -228,6 +228,26 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+     .duplicate-warning {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .duplicate-warning.show {
+            display: block;
+        }
+        
+        .is-duplicate {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+        
+        .checking-duplicate {
+            border-color: #ffc107 !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+        }
     </style>
 </head>
 <body>
@@ -264,10 +284,7 @@
                 <form th:action="${puerto.idPuerto} != null ? @{/puertos/actualizar/{id}(id=${puerto.idPuerto})} : @{/puertos}"
                       th:object="${puerto}" method="post" class="row g-4" novalidate id="puertoForm">
 
-                    <!-- CSRF Token (descomentar si es necesario) -->
-                    <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> -->
-
-                    <input type="hidden" th:field="*{idPuerto}" />
+                    <input type="hidden" th:field="*{idPuerto}" id="puertoId" />
 
                     <!-- Errores globales -->
                     <div th:if="${#fields.hasGlobalErrors()}" class="col-12">
@@ -292,6 +309,10 @@
                                required placeholder="Ingrese el nombre del puerto"
                                maxlength="100" id="nombre" />
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                        <div class="duplicate-warning" id="duplicateWarning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <span id="duplicateMessage">Ya existe un puerto con este nombre</span>
+                        </div>
                         <div class="form-text-custom">Ejemplo: Puerto de Acajutla, Puerto de La Libertad</div>
                     </div>
 
@@ -369,7 +390,13 @@
             const form = document.getElementById('puertoForm');
             const submitBtn = document.getElementById('submitBtn');
             const cancelBtn = document.getElementById('cancelBtn');
+            const nombreInput = document.getElementById('nombre');
+            const duplicateWarning = document.getElementById('duplicateWarning');
+            const duplicateMessage = document.getElementById('duplicateMessage');
+            const puertoId = document.getElementById('puertoId').value;
             let formChanged = false;
+            let isCheckingDuplicate = false;
+            let duplicateCheckTimeout = null;
 
             // Prevenir envío si no hay ciudades
             const ciudadesEmpty = [[${#lists.isEmpty(ciudades)}]];
@@ -386,7 +413,74 @@
                 });
             });
 
-            // Validación en tiempo real
+            // Validación en tiempo real para duplicados
+            nombreInput.addEventListener('input', function() {
+                clearTimeout(duplicateCheckTimeout);
+                
+                // Remover estados anteriores
+                nombreInput.classList.remove('is-duplicate', 'checking-duplicate');
+                duplicateWarning.classList.remove('show');
+                
+                const nombre = this.value.trim();
+                
+                if (nombre.length < 2) {
+                    return; // No validar si el nombre es muy corto
+                }
+                
+                // Mostrar estado de "verificando"
+                nombreInput.classList.add('checking-duplicate');
+                
+                // Hacer debounce para no saturar el servidor
+                duplicateCheckTimeout = setTimeout(() => {
+                    verificarDuplicado(nombre);
+                }, 500);
+            });
+
+            // Función para verificar duplicado en el servidor
+            function verificarDuplicado(nombre) {
+                if (isCheckingDuplicate) return;
+                
+                isCheckingDuplicate = true;
+                
+                // Aquí podrías hacer una llamada AJAX al servidor para verificar duplicados
+                // Por ahora hacemos una simulación
+                
+                // Simular verificación (en un caso real, harías una petición AJAX)
+                setTimeout(() => {
+                    const esDuplicado = verificarDuplicadoLocalmente(nombre);
+                    
+                    if (esDuplicado) {
+                        nombreInput.classList.remove('checking-duplicate');
+                        nombreInput.classList.add('is-duplicate');
+                        duplicateMessage.textContent = `Ya existe un puerto con el nombre "${nombre}"`;
+                        duplicateWarning.classList.add('show');
+                        submitBtn.disabled = true;
+                    } else {
+                        nombreInput.classList.remove('checking-duplicate', 'is-duplicate');
+                        duplicateWarning.classList.remove('show');
+                        submitBtn.disabled = false;
+                    }
+                    
+                    isCheckingDuplicate = false;
+                }, 300);
+            }
+
+            // Función temporal para simular verificación de duplicados
+            function verificarDuplicadoLocalmente(nombre) {
+                // En una implementación real, esto sería una llamada AJAX al servidor
+                // que verificaría contra la base de datos
+                const nombresExistentes = [
+                    'Puerto de Acajutla', 
+                    'Puerto de La Libertad',
+                    'Puerto de Cutuco'
+                ];
+                
+                return nombresExistentes.some(existente => 
+                    existente.toLowerCase() === nombre.toLowerCase()
+                );
+            }
+
+            // Validación en tiempo real para campos requeridos
             const inputs = form.querySelectorAll('input[required], select[required]');
             inputs.forEach(input => {
                 input.addEventListener('blur', function() {
@@ -419,6 +513,19 @@
                     }
                 });
 
+                // Validar duplicados antes de enviar
+                const nombre = nombreInput.value.trim();
+                if (verificarDuplicadoLocalmente(nombre)) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Puerto duplicado',
+                        html: `El puerto "<strong>${nombre}</strong>" ya existe en el sistema.<br>Por favor, use un nombre diferente.`,
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return;
+                }
+
                 if (!isValid) {
                     e.preventDefault();
                     Swal.fire({
@@ -438,7 +545,7 @@
 
                 Swal.fire({
                     title: `¿Confirmar ${actionText}?`,
-                    text: `¿Está seguro de que desea ${actionText} este puerto?`,
+                    html: `¿Está seguro de que desea ${actionText} el puerto <strong>"${nombre}"</strong>?`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#198754',
