@@ -44,4 +44,10 @@ public class CiudadServiceImpl implements ICiudadService {
 			return false;
 		}
 	}
+	
+	@Override
+	public long contarCiudades() {
+		// TODO Auto-generated method stub
+		return ciudadRepo.count();
+	}
 }
