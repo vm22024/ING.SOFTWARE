@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Lista de Usuarios - Sistema de Cruceros</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<style>
+body { background: linear-gradient(135deg, #f0f4f9, #d9e4f5); font-family: "Poppins", sans-serif; }
+.card { border-radius: 1.2rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); overflow: hidden; margin-top: 2rem; }
+.card-header { background: linear-gradient(90deg, #0d6efd, #20c997); color: white; font-weight: 600; letter-spacing: 1px; padding: 1rem 1.5rem; font-size: 1.3rem; }
+.table thead { background: #0d6efd; color: white; }
+.table tbody tr:hover { background-color: #eef6ff; transition: all 0.3s ease-in-out; }
+.search-bar { max-width: 300px; }
+.btn-custom { border-radius: 2rem; padding: 0.4rem 1rem; }
+</style>
+</head>
+<body>
+  <div class="container my-5">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>👥 Gestión de Usuarios - Sistema de Cruceros</span>
+        <div>
+          <input id="searchInput" type="text"
+                 class="form-control form-control-sm d-inline-block search-bar me-2"
+                 placeholder="🔍 Buscar usuario...">
+          <a th:href="@{/usuarios/nuevo}" class="btn btn-light btn-sm btn-custom">➕ Nuevo Usuario</a>
+        </div>
+      </div>
+
+      <div class="card-body p-4">
+        <div th:if="${ok}" class="alert alert-success alert-dismissible fade show" role="alert">
+          <span th:text="${ok}">Operación realizada con éxito</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <span th:text="${error}">Ocurrió un error</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="table-responsive">
+          <table id="tablaUsuarios" class="table table-hover align-middle text-center">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre Completo</th>
+                <th>Cargo</th>
+                <th>DUI</th>
+                <th>Teléfono</th>
+                <th>Username</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="usuario : ${usuarios}">
+                <td th:text="${usuario.id}"></td>
+                <td th:text="${usuario.nombreCompleto}"></td>
+                <td th:text="${usuario.cargo}"></td>
+                <td th:text="${usuario.dui}"></td>
+                <td>
+                  <span th:text="${usuario.telefono} ?: 'N/A'" 
+                        th:class="${usuario.telefono} ? '' : 'text-muted'"></span>
+                </td>
+                <td>
+                  <span th:text="${usuario.username}"></span>
+                  <span th:if="${usuario.esAdmin}" class="badge bg-warning text-dark ms-2">Admin</span>
+                </td>
+                <td>
+                  <span th:if="${usuario.activo}" class="badge bg-success">Activo</span>
+                  <span th:unless="${usuario.activo}" class="badge bg-danger">Inactivo</span>
+                </td>
+                <td>
+                  <a th:href="@{/usuarios/editar/{id}(id=${usuario.id})}"
+                     class="btn btn-primary btn-sm mb-1 btn-custom">
+                    ✏️ Editar
+                  </a>
+                  <a th:if="${!usuario.esAdmin}"
+                     th:href="@{/usuarios/eliminar/{id}(id=${usuario.id})}"
+                     class="btn btn-danger btn-sm btn-custom"
+                     onclick="return confirm('¿Seguro que desea eliminar este usuario?');">
+                    🗑️ Eliminar
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+  <script>
+  document.getElementById("searchInput").addEventListener("keyup", function () {
+      let value = this.value.toLowerCase();
+      let rows = document.querySelectorAll("#tablaUsuarios tbody tr");
+      rows.forEach(row => {
+          let text = row.textContent.toLowerCase();
+          row.style.display = text.includes(value) ? "" : "none";
+      });
+  });
+
+  $(document).ready(function() {
+      $('#tablaUsuarios').DataTable({
+          paging: true,
+          ordering: true,
+          info: true,
+          lengthMenu: [5, 10, 25, 50],
+          pageLength: 5,
+          dom: 'lrtip',
+          language: {
+              search: "Buscar:",
+              lengthMenu: "Mostrar _MENU_ usuarios",
+              info: "Mostrando _START_ a _END_ de _TOTAL_ usuarios",
+              paginate: {
+                  first: "Primero",
+                  last: "Último",
+                  next: "Siguiente",
+                  previous: "Anterior"
+              }
+          }
+      });
+  });
+  </script>
+</body>
+</html>
