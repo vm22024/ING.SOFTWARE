@@ -2,131 +2,360 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>Lista de Usuarios - Sistema de Cruceros</title>
+<title>Lista de Usuarios - CRUISEMANAGER</title>
+
+<!-- CSS Libraries -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 <style>
-body { background: linear-gradient(135deg, #f0f4f9, #d9e4f5); font-family: "Poppins", sans-serif; }
-.card { border-radius: 1.2rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); overflow: hidden; margin-top: 2rem; }
-.card-header { background: linear-gradient(90deg, #0d6efd, #20c997); color: white; font-weight: 600; letter-spacing: 1px; padding: 1rem 1.5rem; font-size: 1.3rem; }
-.table thead { background: #0d6efd; color: white; }
-.table tbody tr:hover { background-color: #eef6ff; transition: all 0.3s ease-in-out; }
-.search-bar { max-width: 300px; }
-.btn-custom { border-radius: 2rem; padding: 0.4rem 1rem; }
+/* Variables de colores */
+:root {
+    --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
+    --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+    --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    --hover-transition: all 0.3s ease-in-out;
+}
+
+/* Estilos generales */
+body {
+    background: var(--background-gradient);
+    font-family: "Poppins", sans-serif;
+    min-height: 100vh;
+}
+
+/* Card principal */
+.main-card {
+    border-radius: 1.2rem;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-top: 2rem;
+    border: none;
+}
+
+.card-header-custom {
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 1rem 1.5rem;
+    font-size: 1.3rem;
+    border-bottom: none;
+}
+
+/* Tabla */
+.table-custom thead {
+    background: #0d6efd;
+    color: white;
+}
+
+.table-custom thead th {
+    border: none;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+}
+
+.table-custom tbody tr {
+    transition: var(--hover-transition);
+}
+
+.table-custom tbody tr:hover {
+    background-color: #eef6ff;
+    transform: translateY(-1px);
+}
+
+.table-custom tbody td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    border-color: #dee2e6;
+}
+
+/* Botones */
+.btn-custom {
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    font-weight: 500;
+    transition: var(--hover-transition);
+    border: none;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-new {
+    background: linear-gradient(45deg, #198754, #20c997);
+    color: white;
+}
+
+.btn-new:hover {
+    background: linear-gradient(45deg, #157347, #1ba87e);
+    color: white;
+}
+
+/* Búsqueda */
+.search-container {
+    max-width: 300px;
+}
+
+.search-input {
+    border-radius: 2rem;
+    border: 2px solid #e9ecef;
+    padding: 0.5rem 1rem;
+    transition: var(--hover-transition);
+}
+
+.search-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Alertas */
+.alert-custom {
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Badges */
+.id-badge {
+    background: linear-gradient(45deg, #6c757d, #adb5bd);
+    color: white;
+    border-radius: 1rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge {
+    border-radius: 1rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-header-custom {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    .search-container {
+        max-width: 100%;
+    }
+    .btn-group-responsive {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .btn-group-responsive .btn {
+        flex: 1;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+/* Estados vacíos */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
 </style>
 </head>
 <body>
-  <div class="container my-5">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span>👥 Gestión de Usuarios - Sistema de Cruceros</span>
-        <div>
-          <input id="searchInput" type="text"
-                 class="form-control form-control-sm d-inline-block search-bar me-2"
-                 placeholder="🔍 Buscar usuario...">
-          <a th:href="@{/usuarios/nuevo}" class="btn btn-light btn-sm btn-custom">➕ Nuevo Usuario</a>
-        </div>
-      </div>
+    <div class="container my-5">
+        <!-- Card Principal -->
+        <div class="card main-card">
+            <!-- Header con título y controles -->
+            <div class="card-header card-header-custom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users me-3"></i>
+                    <h1 class="h4 mb-0">Gestión de Usuarios</h1>
+                </div>
 
-      <div class="card-body p-4">
-        <div th:if="${ok}" class="alert alert-success alert-dismissible fade show" role="alert">
-          <span th:text="${ok}">Operación realizada con éxito</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-          <span th:text="${error}">Ocurrió un error</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
+                <div class="d-flex flex-column flex-sm-row align-items-center gap-2 w-100 w-md-auto">
+                    <div class="search-container w-100">
+                        <div class="input-group">
+                            <span class="input-group-text search-input border-end-0">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control search-input border-start-0" placeholder="Buscar usuarios...">
+                        </div>
+                    </div>
+                    <a th:href="@{/usuarios/nuevo}" class="btn btn-new btn-custom">
+                        <i class="fas fa-plus me-2"></i>Nuevo Usuario
+                    </a>
+                </div>
+            </div>
 
-        <div class="table-responsive">
-          <table id="tablaUsuarios" class="table table-hover align-middle text-center">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre Completo</th>
-                <th>Cargo</th>
-                <th>DUI</th>
-                <th>Teléfono</th>
-                <th>Username</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="usuario : ${usuarios}">
-                <td th:text="${usuario.id}"></td>
-                <td th:text="${usuario.nombreCompleto}"></td>
-                <td th:text="${usuario.cargo}"></td>
-                <td th:text="${usuario.dui}"></td>
-                <td>
-                  <span th:text="${usuario.telefono} ?: 'N/A'" 
-                        th:class="${usuario.telefono} ? '' : 'text-muted'"></span>
-                </td>
-                <td>
-                  <span th:text="${usuario.username}"></span>
-                  <span th:if="${usuario.esAdmin}" class="badge bg-warning text-dark ms-2">Admin</span>
-                </td>
-                <td>
-                  <span th:if="${usuario.activo}" class="badge bg-success">Activo</span>
-                  <span th:unless="${usuario.activo}" class="badge bg-danger">Inactivo</span>
-                </td>
-                <td>
-                  <a th:href="@{/usuarios/editar/{id}(id=${usuario.id})}"
-                     class="btn btn-primary btn-sm mb-1 btn-custom">
-                    ✏️ Editar
-                  </a>
-                  <a th:if="${!usuario.esAdmin}"
-                     th:href="@{/usuarios/eliminar/{id}(id=${usuario.id})}"
-                     class="btn btn-danger btn-sm btn-custom"
-                     onclick="return confirm('¿Seguro que desea eliminar este usuario?');">
-                    🗑️ Eliminar
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            <!-- Body -->
+            <div class="card-body p-4">
+                <!-- Alertas de notificación -->
+                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${ok}">Operación realizada con éxito</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
 
-      </div>
+                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}">Ocurrió un error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- Estado vacío cuando no hay usuarios -->
+                <div th:if="${#lists.isEmpty(usuarios)}" class="text-center py-5">
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h5>No hay usuarios registrados</h5>
+                        <p class="mb-0">Comienza agregando el primer usuario al sistema.</p>
+                        <a th:href="@{/usuarios/nuevo}" class="btn btn-new btn-custom mt-3">
+                            <i class="fas fa-plus me-2"></i>Crear Primer Usuario
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tabla de usuarios (solo se muestra si hay datos) -->
+                <div th:if="${not #lists.isEmpty(usuarios)}" class="table-responsive">
+                    <table id="tablaUsuarios" class="table table-hover table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th width="80">ID</th>
+                                <th>Nombre Completo</th>
+                                <th>Cargo</th>
+                                <th>DUI</th>
+                                <th>Usuario</th>
+                                <th>Estado</th>
+                                <th width="200">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Lista de usuarios -->
+                            <tr th:each="usuario : ${usuarios}">
+                                <td>
+                                    <span class="id-badge" th:text="${usuario.id}"></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-user text-primary me-2"></i>
+                                    <strong th:text="${usuario.nombreCompleto}"></strong>
+                                </td>
+                                <td>
+                                    <i class="fas fa-briefcase text-info me-2"></i>
+                                    <span th:text="${usuario.cargo}"></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-id-card text-warning me-2"></i>
+                                    <span th:text="${usuario.dui}"></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-at text-success me-2"></i>
+                                    <span th:text="${usuario.username}"></span>
+                                    <span th:if="${usuario.esAdmin}" class="badge bg-warning text-dark ms-1">Admin</span>
+                                </td>
+                                <td>
+                                    <span th:if="${usuario.activo}" class="status-badge bg-success">Activo</span>
+                                    <span th:unless="${usuario.activo}" class="status-badge bg-danger">Inactivo</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group-responsive d-flex flex-nowrap gap-2">
+                                        <a th:href="@{/usuarios/editar/{id}(id=${usuario.id})}" 
+                                           class="btn btn-primary btn-sm btn-custom flex-fill"
+                                           title="Editar usuario">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <a th:if="${!usuario.esAdmin}"
+                                           th:href="@{/usuarios/eliminar/{id}(id=${usuario.id})}" 
+                                           class="btn btn-danger btn-sm btn-custom flex-fill"
+                                           th:attr="data-user-name=${usuario.nombreCompleto}"
+                                           onclick="return confirmDelete(this);" 
+                                           title="Eliminar usuario">
+                                            <i class="fas fa-trash me-1"></i>Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-  <script>
-  document.getElementById("searchInput").addEventListener("keyup", function () {
-      let value = this.value.toLowerCase();
-      let rows = document.querySelectorAll("#tablaUsuarios tbody tr");
-      rows.forEach(row => {
-          let text = row.textContent.toLowerCase();
-          row.style.display = text.includes(value) ? "" : "none";
-      });
-  });
+    <script>
+        // Inicializar DataTables solo si la tabla existe
+        $(document).ready(function() {
+            const tableElement = document.getElementById('tablaUsuarios');
 
-  $(document).ready(function() {
-      $('#tablaUsuarios').DataTable({
-          paging: true,
-          ordering: true,
-          info: true,
-          lengthMenu: [5, 10, 25, 50],
-          pageLength: 5,
-          dom: 'lrtip',
-          language: {
-              search: "Buscar:",
-              lengthMenu: "Mostrar _MENU_ usuarios",
-              info: "Mostrando _START_ a _END_ de _TOTAL_ usuarios",
-              paginate: {
-                  first: "Primero",
-                  last: "Último",
-                  next: "Siguiente",
-                  previous: "Anterior"
-              }
-          }
-      });
-  });
-  </script>
+            if (tableElement) {
+                const table = $('#tablaUsuarios').DataTable({
+                    paging: true,
+                    ordering: true,
+                    info: true,
+                    searching: true,
+                    lengthMenu: [5, 10, 25, 50],
+                    pageLength: 10,
+                    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+                    language: {
+                        "search": "Buscar:",
+                        "lengthMenu": "Mostrar _MENU_ usuarios por página",
+                        "zeroRecords": "No se encontraron usuarios que coincidan con la búsqueda",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ usuarios",
+                        "infoEmpty": "No hay usuarios disponibles",
+                        "infoFiltered": "(filtrado de _MAX_ usuarios totales)",
+                        "paginate": {
+                            "first": "Primero",
+                            "last": "Último",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        },
+                        "emptyTable": "No hay usuarios registrados en el sistema"
+                    },
+                    columnDefs: [{
+                        orderable: false,
+                        targets: 6 // Columna de acciones no ordenable
+                    }],
+                    drawCallback: function(settings) {
+                        // Personalizar el mensaje de tabla vacía
+                        const api = this.api();
+                        if (api.rows().count() === 0) {
+                            $('.dataTables_empty').html(
+                                '<div class="empty-state">' +
+                                '<i class="fas fa-search"></i>' +
+                                '<h5>No se encontraron usuarios</h5>' +
+                                '<p class="mb-0">Intenta con otros términos de búsqueda.</p>' +
+                                '</div>'
+                            );
+                        }
+                    }
+                });
+
+                // Búsqueda personalizada
+                $('#searchInput').on('keyup', function() {
+                    table.search(this.value).draw();
+                });
+            }
+        });
+
+        // Confirmación mejorada para eliminar
+        function confirmDelete(element) {
+            const userName = element.getAttribute('data-user-name');
+            return confirm(`¿Está seguro de que desea eliminar al usuario "${userName}"?\n\nEsta acción no se puede deshacer.`);
+        }
+    </script>
 </body>
 </html>

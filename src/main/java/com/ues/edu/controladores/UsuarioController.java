@@ -41,28 +41,34 @@ public class UsuarioController {
         return "usuarios/lista";
     }
 
-    // Nuevo
+    // Nuevo - CAMBIADO
     @GetMapping("/nuevo")
     public String mostrarFormulario(Model model) {
         model.addAttribute("usuario", new Usuario());
         model.addAttribute("esEdicion", false);
         model.addAttribute("adminProtegido", false);
-        return "usuarios/form";
+        return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
     }
 
-    // Guardar nuevo
+    // Guardar nuevo - CAMBIADO
     @PostMapping
     public String guardar(@Valid @ModelAttribute("usuario") Usuario usuario,
                           BindingResult br,
                           Model model,
                           RedirectAttributes ra) {
 
+        // 🔧 VALIDACIÓN MANUAL para contraseña en CREACIÓN
+        if (usuario.getPassword() == null || usuario.getPassword().trim().isEmpty()) {
+            br.rejectValue("password", "NotBlank", "La contraseña es obligatoria");
+        } else if (usuario.getPassword().length() < 6) {
+            br.rejectValue("password", "Size", "La contraseña debe tener al menos 6 caracteres");
+        }
+
         if (br.hasErrors()) {
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/form";
+            return "usuarios/formulario";
         }
-
         try {
             usuarioService.guardar(usuario);
             ra.addFlashAttribute("ok", "Usuario guardado correctamente.");
@@ -82,23 +88,23 @@ public class UsuarioController {
             }
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
 
         } catch (DataIntegrityViolationException ex) {
             br.rejectValue("dui", "dui.duplicado", "El número de DUI ya está registrado.");
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
 
         } catch (Exception ex) {
             model.addAttribute("error", "Ocurrió un error inesperado. Inténtalo nuevamente.");
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
         }
     }
 
-    // Editar
+    // Editar - CAMBIADO
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable("id") Long id, Model model, RedirectAttributes ra) {
         try {
@@ -107,14 +113,14 @@ public class UsuarioController {
             model.addAttribute("esEdicion", true);
             boolean adminProtegido = usuario.isEsAdmin() || "admin".equalsIgnoreCase(usuario.getUsername());
             model.addAttribute("adminProtegido", adminProtegido);
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
             return "redirect:/usuarios";
         }
     }
 
-    // Actualizar
+    // Actualizar - CAMBIADO
     @PostMapping("/actualizar/{id}")
     public String actualizar(@PathVariable("id") Long id,
                              @Valid @ModelAttribute("usuario") Usuario usuario,
@@ -129,17 +135,24 @@ public class UsuarioController {
 
             boolean adminProtegido = existente.isEsAdmin() || "admin".equalsIgnoreCase(existente.getUsername());
 
+            
+            if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+                usuario.setPassword(existente.getPassword());
+            } else {
+                // Si se proporcionó nueva contraseña, validar longitud
+                if (usuario.getPassword().length() < 6) {
+                    br.rejectValue("password", "password.invalida", "La contraseña debe tener al menos 6 caracteres");
+                }
+            }
+
             if (br.hasErrors()) {
                 model.addAttribute("esEdicion", true);
                 model.addAttribute("adminProtegido", adminProtegido);
-                return "usuarios/form";
+                return "usuarios/formulario";
             }
 
             if (adminProtegido) {
                 usuario.setUsername(existente.getUsername());
-            }
-            if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
-                usuario.setPassword(existente.getPassword());
             }
 
             usuarioService.guardar(usuario);
@@ -168,23 +181,23 @@ public class UsuarioController {
             } catch (Exception ignore) {
                 model.addAttribute("adminProtegido", false);
             }
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
 
         } catch (DataIntegrityViolationException ex) {
             br.rejectValue("dui", "dui.duplicado", "El número de DUI ya está registrado.");
             model.addAttribute("esEdicion", true);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
 
         } catch (Exception ex) {
             model.addAttribute("error", "Error al actualizar el usuario: " + ex.getMessage());
             model.addAttribute("esEdicion", true);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/form";
+            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
         }
     }
 
-    // Eliminar
+    // Eliminar (sin cambios)
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable("id") Long id, RedirectAttributes ra) {
         try {

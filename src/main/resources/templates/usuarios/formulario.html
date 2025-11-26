@@ -1,126 +1,597 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title th:text="${usuario.id} != null ? 'Editar Usuario - Sistema de Cruceros' : 'Nuevo Usuario - Sistema de Cruceros'">Formulario Usuario</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-body { background: linear-gradient(135deg, #f0f4f9, #d9e4f5); font-family: "Poppins", sans-serif; }
-.card { border-radius: 1.2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.08); overflow: hidden; margin-top: 2rem; }
-.card-header { background: linear-gradient(90deg, #0d6efd, #20c997); color: white; font-weight: 600; letter-spacing: 1px; padding: 1rem 1.5rem; font-size: 1.3rem; }
-.btn-custom { border-radius: 2rem; padding: 0.4rem 1rem; }
-.form-label { font-weight: 500; }
-</style>
+    <meta charset="UTF-8">
+    <title th:text="${usuario.id} != null ? 'Editar Usuario - CRUISEMANAGER' : 'Nuevo Usuario - CRUISEMANAGER'">Formulario Usuario</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* Variables de colores */
+        :root {
+            --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
+            --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            --hover-transition: all 0.3s ease-in-out;
+            --success-gradient: linear-gradient(45deg, #198754, #20c997);
+            --danger-color: #dc3545;
+        }
+        
+        /* Estilos generales */
+        body {
+            background: var(--background-gradient);
+            font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Card principal */
+        .main-card {
+            border-radius: 1.2rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-top: 2rem;
+            border: none;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .card-header-custom {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        /* Botones */
+        .btn-custom {
+            border-radius: 2rem;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: var(--hover-transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary-custom {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        
+        .btn-success-custom {
+            background: var(--success-gradient);
+            color: white;
+        }
+        
+        .btn-secondary-custom {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+        }
+        
+        /* Formularios */
+        .form-container {
+            padding: 2rem;
+        }
+        
+        .form-label-custom {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control-custom, .form-select-custom {
+            border-radius: 1rem;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: var(--hover-transition);
+            font-size: 1rem;
+        }
+        
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        .form-control-custom.is-invalid, .form-select-custom.is-invalid {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        
+        /* Alertas */
+        .alert-custom {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+        }
+        
+        .alert-custom .btn-close {
+            padding: 0.75rem;
+        }
+        
+        /* Iconos */
+        .form-icon {
+            color: #0d6efd;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Grupo de botones */
+        .btn-group-custom {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f8f9fa;
+        }
+        
+        /* Badge para ID */
+        .id-badge {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        
+        /* Checkboxes personalizados */
+        .form-check-custom {
+            background: #f8f9fa;
+            border-radius: 1rem;
+            border: 2px solid #e9ecef;
+            transition: var(--hover-transition);
+        }
+        
+        .form-check-custom:hover {
+            border-color: #0d6efd;
+            background: #f0f8ff;
+        }
+        
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .btn-group-custom {
+                flex-direction: column;
+            }
+            
+            .btn-group-custom .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .card-header-custom {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            
+            .id-badge {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+        
+        /* Estados de validación */
+        .invalid-feedback {
+            display: block;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .form-text-custom {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
 </head>
 <body>
-<div class="container my-5">
-  <div class="card">
-    <div class="card-header" th:text="${usuario.id} != null ? '✏️ Editar Usuario - Sistema de Cruceros' : '📄 Nuevo Usuario - Sistema de Cruceros'"></div>
-    <div class="card-body p-4">
+    <div class="container my-5">
+        <!-- Card Principal -->
+        <div class="card main-card fade-in">
+            <!-- Header -->
+            <div class="card-header card-header-custom">
+                <div class="d-flex align-items-center flex-wrap">
+                    <i class="fas" th:classappend="${usuario.id} != null ? 'fa-edit' : 'fa-user-plus'"></i>
+                    <span th:text="${usuario.id} != null ? 'Editar Usuario' : 'Nuevo Usuario'"></span>
+                    <span th:if="${usuario.id} != null" class="id-badge">
+                        ID: <span th:text="${usuario.id}"></span>
+                    </span>
+                </div>
+            </div>
 
-      <div th:if="${ok}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${ok}">Operación realizada con éxito</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-      </div>
-      <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${error}">Ocurrió un error</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-      </div>
+            <!-- Body del Formulario -->
+            <div class="form-container">
+                <!-- Alertas de notificación -->
+                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${ok}">Operación realizada con éxito</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}">Ocurrió un error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
 
-      <div th:if="${usuario != null and usuario.esAdmin}"
-           class="alert alert-warning">
-        ⚠️ Este es un usuario <strong>Administrador del Sistema</strong>. Tenga precaución al realizar cambios.
-      </div>
+                <!-- Advertencia para usuario admin -->
+                <div th:if="${usuario != null and usuario.esAdmin}" class="alert alert-warning alert-custom">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>Usuario Administrador del Sistema</strong> - Tenga precaución al realizar cambios en este usuario.
+                </div>
 
-      <form th:action="${usuario.id} != null ? @{/usuarios/actualizar/{id}(id=${usuario.id})} : @{/usuarios}"
-            th:object="${usuario}"
-            method="post"
-            class="row g-3"
-            novalidate>
+                <!-- Formulario -->
+                <form th:action="${usuario.id} != null ? @{/usuarios/actualizar/{id}(id=${usuario.id})} : @{/usuarios}"
+                      th:object="${usuario}"
+                      method="post"
+                      class="row g-4"
+                      novalidate>
 
-        <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" th:field="*{id}" />
 
-        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
-          <ul class="mb-0">
-            <li th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</li>
-          </ul>
-        </div>
+                    <!-- Errores globales -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="col-12">
+                        <div class="alert alert-danger alert-custom" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Errores encontrados:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</li>
+                            </ul>
+                        </div>
+                    </div>
 
-        <!-- Fila 1: Información Personal -->
-        <div class="col-md-6">
-          <label for="nombreCompleto" class="form-label">Nombre Completo</label>
-          <input type="text" th:field="*{nombreCompleto}" class="form-control"
-                 th:classappend="${#fields.hasErrors('nombreCompleto')} ? ' is-invalid'" 
-                 placeholder="Ej: Juan Pérez García" required />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></div>
-        </div>
+                    <!-- Fila 1: Información Personal -->
+                    <div class="col-md-6">
+                        <label for="nombreCompleto" class="form-label-custom">
+                            <i class="fas fa-user form-icon"></i>
+                            Nombre Completo
+                        </label>
+                        <input type="text" 
+                               th:field="*{nombreCompleto}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('nombreCompleto')} ? ' is-invalid'"
+                               required
+                               placeholder="Ingrese el nombre completo"
+                               maxlength="150" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></div>
+                        <div class="form-text-custom">
+                            Ejemplo: Juan Carlos Pérez García
+                        </div>
+                    </div>
 
-        <div class="col-md-6">
-          <label for="cargo" class="form-label">Cargo</label>
-          <input type="text" th:field="*{cargo}" class="form-control"
-                 th:classappend="${#fields.hasErrors('cargo')} ? ' is-invalid'" 
-                 placeholder="Ej: Administrador, Gerente, etc." required />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('cargo')}" th:errors="*{cargo}"></div>
-        </div>
+                    <div class="col-md-6">
+                        <label for="cargo" class="form-label-custom">
+                            <i class="fas fa-briefcase form-icon"></i>
+                            Cargo
+                        </label>
+                        <select th:field="*{cargo}" 
+                                class="form-select form-select-custom"
+                                th:classappend="${#fields.hasErrors('cargo')} ? ' is-invalid'"
+                                id="cargoSelect"
+                                required>
+                            <option value="">Seleccione un cargo</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Usuario">Usuario</option>
+                            <option value="Gerente">Gerente</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="Operador">Operador</option>
+                            <option value="Consultor">Consultor</option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('cargo')}" th:errors="*{cargo}"></div>
+                        <div class="form-text-custom">
+                            Seleccione el cargo del usuario en el sistema
+                        </div>
+                    </div>
 
-        <!-- Fila 2: Documentación y Contacto -->
-        <div class="col-md-6">
-          <label for="dui" class="form-label">DUI</label>
-          <input type="text" th:field="*{dui}" class="form-control"
-                 th:classappend="${#fields.hasErrors('dui')} ? ' is-invalid'"
-                 required placeholder="00000000-0" />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('dui')}" th:errors="*{dui}"></div>
-        </div>
+                    <!-- Fila 2: Documentación y Contacto -->
+                    <div class="col-md-6">
+                        <label for="dui" class="form-label-custom">
+                            <i class="fas fa-id-card form-icon"></i>
+                            DUI
+                        </label>
+                        <input type="text" 
+                               th:field="*{dui}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('dui')} ? ' is-invalid'"
+                               required
+                               placeholder="00000000-0"
+                               maxlength="10" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dui')}" th:errors="*{dui}"></div>
+                        <div class="form-text-custom">
+                            Formato: 9 dígitos con guion (ej: 12345678-9)
+                        </div>
+                    </div>
 
-        <div class="col-md-6">
-          <label for="telefono" class="form-label">Teléfono</label>
-          <input type="text" th:field="*{telefono}" class="form-control"
-                 th:classappend="${#fields.hasErrors('telefono')} ? ' is-invalid'"
-                 placeholder="Ej: 77778888 (8-15 dígitos)" />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
-        </div>
+                    <div class="col-md-6">
+                        <label for="telefono" class="form-label-custom">
+                            <i class="fas fa-phone form-icon"></i>
+                            Teléfono
+                        </label>
+                        <input type="text" 
+                               th:field="*{telefono}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('telefono')} ? ' is-invalid'"
+                               placeholder="77778888"
+                               maxlength="15" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+                        <div class="form-text-custom">
+                            Opcional - Entre 8 y 15 dígitos
+                        </div>
+                    </div>
 
-        <!-- Fila 3: Credenciales -->
-        <div class="col-md-6">
-          <label for="username" class="form-label">Nombre de Usuario</label>
-          <input type="text" th:field="*{username}" class="form-control"
-                 th:classappend="${#fields.hasErrors('username')} ? ' is-invalid'"
-                 required th:readonly="${usuario.esAdmin}" />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
-        </div>
-
-        <div class="col-md-6">
-          <label for="password" class="form-label">Contraseña</label>
-          <input type="password" th:field="*{password}" class="form-control"
-                 th:placeholder="${usuario.id} != null ? 'Dejar vacío para mantener la actual' : 'Mínimo 6 caracteres'"
-                 th:attr="required=${usuario.id == null}"
-                 th:readonly="${usuario.esAdmin}" />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-        </div>
-
-        <!-- Fila 4: Opciones -->
-        <div class="col-md-6 form-check mt-2">
-          <input type="checkbox" th:field="*{activo}" class="form-check-input" id="activo">
-          <label class="form-check-label" for="activo">Usuario Activo</label>
-        </div>
-
-        <div class="col-md-6 form-check mt-2">
-          <input type="checkbox" th:field="*{esAdmin}" class="form-check-input" id="esAdmin">
-          <label class="form-check-label" for="esAdmin">Administrador del Sistema</label>
-        </div>
-
-        <!-- Fila 5: Botones -->
-        <div class="col-12 d-flex gap-2 mt-4">
-          <button type="submit"
-                  th:text="${usuario.id} != null ? '💾 Guardar cambios' : '💾 Crear usuario'"
-                  class="btn btn-primary btn-custom"></button>
-          <a th:href="@{/usuarios}" class="btn btn-secondary btn-custom">❌ Cancelar</a>
-        </div>
-      </form>
-
+                   <!-- Fila 3: Credenciales -->
+<div class="col-md-6">
+    <label for="username" class="form-label-custom">
+        <i class="fas fa-at form-icon"></i>
+        Nombre de Usuario
+    </label>
+    <input type="text" 
+           th:field="*{username}" 
+           class="form-control form-control-custom"
+           th:classappend="${#fields.hasErrors('username')} ? ' is-invalid'"
+           th:readonly="${adminProtegido}"
+           required
+           placeholder="Ingrese el nombre de usuario"
+           maxlength="50" />
+    <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+    <div class="form-text-custom">
+        Mínimo 4 caracteres, único en el sistema
     </div>
-  </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="col-md-6">
+    <label for="password" class="form-label-custom">
+        <i class="fas fa-lock form-icon"></i>
+        Contraseña
+        <span th:if="${usuario.id} != null" class="text-warning">(Opcional para edición)</span>
+    </label>
+    <input type="password" 
+           th:field="*{password}" 
+           class="form-control form-control-custom"
+           th:classappend="${#fields.hasErrors('password')} ? ' is-invalid'"
+           th:placeholder="${usuario.id} != null ? 'Dejar vacío para mantener la contraseña actual' : 'Mínimo 6 caracteres'"
+           th:attr="minlength=${usuario.id == null ? 6 : 0}"
+           id="passwordField" />
+    <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+    <div class="form-text-custom" th:if="${usuario.id} != null">
+        <i class="fas fa-info-circle text-info"></i>
+        Solo ingrese una nueva contraseña si desea cambiarla
+    </div>
+    <div class="form-text-custom" th:if="${usuario.id} == null">
+        <i class="fas fa-info-circle text-info"></i>
+        La contraseña debe tener al menos 6 caracteres
+    </div>
+</div>
+
+                    <!-- Fila 4: Opciones del Sistema -->
+                    <div class="col-md-6">
+                        <div class="form-check-custom p-3 border rounded-3">
+                            <input type="checkbox" 
+                                   th:field="*{activo}" 
+                                   class="form-check-input" 
+                                   id="activo">
+                            <label class="form-check-label form-label-custom ms-2" for="activo">
+                                <i class="fas fa-toggle-on form-icon"></i>
+                                Usuario Activo
+                            </label>
+                            <div class="form-text-custom ms-4">
+                                Desmarque para desactivar el usuario temporalmente
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-check-custom p-3 border rounded-3">
+                            <input type="checkbox" 
+                                   th:field="*{esAdmin}" 
+                                   class="form-check-input" 
+                                   id="esAdmin">
+                            <label class="form-check-label form-label-custom ms-2" for="esAdmin">
+                                <i class="fas fa-shield-alt form-icon"></i>
+                                Administrador del Sistema
+                            </label>
+                            <div class="form-text-custom ms-4">
+                                Otorga permisos completos en el sistema
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="col-12">
+                        <div class="alert alert-info alert-custom">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3 fs-5"></i>
+                                <div>
+                                    <strong>Información importante:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>El DUI y nombre de usuario deben ser únicos en el sistema</li>
+                                        <li>Los usuarios administradores tienen acceso completo a todas las funciones</li>
+                                        <li>Puede desactivar usuarios sin eliminarlos del sistema</li>
+                                        <li>Al seleccionar "Administrador" como cargo, se activarán automáticamente los permisos de administrador</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="col-12">
+                        <div class="btn-group-custom">
+                            <button type="submit" 
+                                    class="btn btn-success-custom btn-custom">
+                                <i class="fas" th:classappend="${usuario.id} != null ? 'fa-save' : 'fa-user-plus'"></i>
+                                <span th:text="${usuario.id} != null ? 'Guardar Cambios' : 'Crear Usuario'"></span>
+                            </button>
+                            <a th:href="@{/usuarios}" class="btn btn-secondary-custom btn-custom">
+                                <i class="fas fa-arrow-left"></i>
+                                Volver a la Lista
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+     <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const cargoSelect = document.getElementById('cargoSelect');
+        const esAdminCheckbox = document.getElementById('esAdmin');
+        const passwordField = document.getElementById('passwordField');
+        const idField = document.querySelector('input[th\\:field="*{id}"]');
+        const isEditMode = idField && idField.value !== '';
+
+        // Función para sincronizar cargo con permisos de administrador
+        function sincronizarCargoConAdmin() {
+            if (cargoSelect.value === 'Administrador') {
+                esAdminCheckbox.checked = true;
+                esAdminCheckbox.disabled = false;
+            } else if (cargoSelect.value === 'Usuario') {
+                esAdminCheckbox.checked = false;
+                esAdminCheckbox.disabled = false;
+            }
+        }
+
+        // Event listener para cambios en el combobox de cargo
+        cargoSelect.addEventListener('change', sincronizarCargoConAdmin);
+        
+        // Inicializar la sincronización al cargar la página
+        sincronizarCargoConAdmin();
+
+        // Manejo especial para la contraseña en modo edición
+        if (isEditMode) {
+            // Remover requerimiento de contraseña en edición
+            passwordField.removeAttribute('required');
+            passwordField.removeAttribute('minlength');
+            
+            // Validación personalizada para el formulario
+            form.addEventListener('submit', function(e) {
+                // Si es edición y el campo de contraseña está vacío, no validar
+                if (passwordField.value.trim() === '') {
+                    // Permitir envío sin contraseña en edición
+                    return true;
+                }
+                
+                // Si hay contraseña, validar que tenga al menos 6 caracteres
+                if (passwordField.value.length > 0 && passwordField.value.length < 6) {
+                    e.preventDefault();
+                    passwordField.classList.add('is-invalid');
+                    const feedback = passwordField.nextElementSibling;
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                        feedback.textContent = 'La contraseña debe tener al menos 6 caracteres';
+                    }
+                    return false;
+                }
+            });
+        }
+
+        // Validación en tiempo real para otros campos
+        const inputs = form.querySelectorAll('input[required], select[required]');
+        inputs.forEach(input => {
+            if (input !== passwordField) { // Excluir password de validación estándar
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid')) {
+                        validateField(this);
+                    }
+                });
+            }
+        });
+
+        function validateField(field) {
+            if (field.value.trim() === '') {
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        }
+
+        // Limpiar validación de contraseña cuando el usuario escribe
+        passwordField.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        // Confirmación antes de salir si hay cambios
+        let formChanged = false;
+        const formFields = form.querySelectorAll('input, select, textarea');
+        
+        formFields.forEach(field => {
+            field.addEventListener('input', function() {
+                formChanged = true;
+            });
+        });
+        
+        // Confirmación al salir con cambios sin guardar
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+        
+        const cancelButton = document.querySelector('a[href*="/usuarios"]');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function(e) {
+                if (formChanged && !confirm('Tiene cambios sin guardar. ¿Está seguro de que desea salir?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+    
+    
 </body>
 </html>
