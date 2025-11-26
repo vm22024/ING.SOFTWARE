@@ -4,4 +4,5 @@ import com.ues.edu.modelo.Puerto;
 
 public interface IPuertoService extends ICRUD<Puerto,Integer>{
 
+	long contarPuertos();
 }
