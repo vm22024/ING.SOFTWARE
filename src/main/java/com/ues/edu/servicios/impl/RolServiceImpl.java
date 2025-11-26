@@ -54,6 +54,6 @@ public class RolServiceImpl implements IRolService{
 	public Rol buscarPorNombre(String filtro) {
 		// TODO Auto-generated method stub
 		return rolRepo.buscarPorNombre(filtro);
-	}
+	}	
 
 }
