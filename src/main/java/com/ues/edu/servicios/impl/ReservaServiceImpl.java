@@ -95,4 +95,10 @@ public class ReservaServiceImpl implements IReservaService {
 
 		return true;
 	}
+
+	@Override
+	public long contarReservas() {
+	
+		return reservaRepo.count();
+	}
 }
