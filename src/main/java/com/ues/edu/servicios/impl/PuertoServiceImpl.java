@@ -44,4 +44,10 @@ public class PuertoServiceImpl implements IPuertoService {
             return false;
         }
     }
+
+	@Override
+	public long contarPuertos() {
+		// TODO Auto-generated method stub
+		return puertoRepo.count();
+	}
 }
