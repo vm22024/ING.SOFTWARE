@@ -47,4 +47,10 @@ public class BarcoServiceImpl implements IBarcoService {
 
 	}
 
+	@Override
+	public long contarBarcos() {
+		
+		return barcoRepo.count();
+	}
+
 }
