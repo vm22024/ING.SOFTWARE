@@ -50,4 +50,13 @@ public class PuertoServiceImpl implements IPuertoService {
 		// TODO Auto-generated method stub
 		return puertoRepo.count();
 	}
+	@Override
+    public boolean existePorNombre(String nombre) {
+        return puertoRepo.existsByNombreIgnoreCase(nombre.trim());
+    }
+
+    @Override
+    public boolean existePorNombreYIdDiferente(String nombre, Integer id) {
+        return puertoRepo.existsByNombreIgnoreCaseAndIdPuertoNot(nombre.trim(), id);
+    }
 }

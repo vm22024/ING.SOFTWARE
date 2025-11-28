@@ -59,22 +59,22 @@ public class DashboardController {
         // Totales - Agregar todos los servicios que necesites
         long totalUsuarios = usuarioService.contarUsuarios();
         long totalPuertos = puertoService.contarPuertos();
-        //long totalCiudades = ciudadService.contarCiudades();
-        //long totalModelosBarco = modeloBarcoService.contarModelosBarco();
+        long totalCiudades = ciudadService.contarCiudades();
+        long totalModelosBarco = modeloBarcoService.contarModelosBarco();
         //long totalNavieras = navieraService.contarNavieras();
         long totalBarcos = barcoService.contarBarcos();
         //long totalCruceros = cruceroService.contarCruceros();
-        //long totalPasajeros = pasajeroService.contarPasajeros();
+        long totalPasajeros = pasajeroService.contarPasajeros();
         long totalReservas = reservaService.contarReservas();
 
         model.addAttribute("totalUsuarios", totalUsuarios);
         model.addAttribute("totalPuertos", totalPuertos);
-        //model.addAttribute("totalCiudades", totalCiudades);
-        //model.addAttribute("totalModelosBarco", totalModelosBarco);
+        model.addAttribute("totalCiudades", totalCiudades);
+        model.addAttribute("totalModelosBarco", totalModelosBarco);
         //model.addAttribute("totalNavieras", totalNavieras);
         model.addAttribute("totalBarcos", totalBarcos);
         //model.addAttribute("totalCruceros", totalCruceros);
-        //model.addAttribute("totalPasajeros", totalPasajeros);
+        model.addAttribute("totalPasajeros", totalPasajeros);
         model.addAttribute("totalReservas", totalReservas);
 
         return "dashboard/dashboard";
