@@ -28,6 +28,10 @@ public class PuertoServiceImpl implements IPuertoService {
     public List<Puerto> listar() {
         return puertoRepo.findAll();
     }
+    
+    public List<Puerto> listarConCiudad() {
+        return puertoRepo.findAllWithCiudad();
+    }
 
     @Override
     public Puerto leerPorId(Integer id) {

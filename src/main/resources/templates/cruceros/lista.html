@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Cruceros Programados - CRUISEMANAGER</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Mantén tus estilos personalizados aquí */
+        :root {
+            --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
+            --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            --hover-transition: all 0.3s ease-in-out;
+        }
+        
+        body {
+            background: var(--background-gradient);
+            font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+        }
+        
+        .main-card {
+            border-radius: 1.2rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-top: 2rem;
+            border: none;
+        }
+        
+        .card-header-custom {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 1rem 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: none;
+        }
+        
+        .btn-custom {
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            font-weight: 500;
+            transition: var(--hover-transition);
+            border: none;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-new {
+            background: linear-gradient(45deg, #198754, #20c997);
+            color: white;
+        }
+        
+        .table-custom thead {
+            background: #0d6efd;
+            color: white;
+        }
+        
+        .table-custom thead th {
+            border: none;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+        }
+        
+        .table-custom tbody tr:hover {
+            background-color: #eef6ff;
+            transform: translateY(-1px);
+        }
+        
+        .id-badge {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- Card Principal -->
+        <div class="card main-card">
+            <!-- Header con título y controles -->
+            <div class="card-header card-header-custom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-ship me-3"></i>
+                    <h1 class="h4 mb-0">Lista de Cruceros Programados</h1>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row align-items-center gap-2 w-100 w-md-auto">
+                    <div class="search-container w-100">
+                        <div class="input-group">
+                            <span class="input-group-text search-input border-end-0">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" id="searchInput"
+                                class="form-control search-input border-start-0"
+                                placeholder="Buscar cruceros...">
+                        </div>
+                    </div>
+                    <a th:href="@{/cruceros/nuevo}" class="btn btn-new btn-custom">
+                        <i class="fas fa-plus me-2"></i>Nuevo Crucero
+                    </a>
+                    <a th:href="@{/dashboard}" class="btn btn-warning btn-custom"> 
+                        <i class="fas fa-sign-out-alt me-2"></i>Regresar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body p-4">
+                <!-- Alertas de notificación -->
+                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${ok}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- Estado vacío -->
+                <div th:if="${#lists.isEmpty(cruceros)}" class="text-center py-5">
+                    <div class="empty-state">
+                        <i class="fas fa-ship"></i>
+                        <h5>No hay cruceros programados</h5>
+                        <p class="mb-0">Comienza programando el primer crucero.</p>
+                        <a th:href="@{/cruceros/nuevo}" class="btn btn-new btn-custom mt-3">
+                            <i class="fas fa-plus me-2"></i>Programar Primer Crucero
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tabla de cruceros -->
+                <div th:if="${not #lists.isEmpty(cruceros)}" class="table-responsive">
+                    <table id="tablaCruceros" class="table table-hover table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th width="80">ID</th>
+                                <th>Barco</th>
+                                <th>Puerto Origen</th>
+                                <th>Puerto Destino</th>
+                                <th>Fecha Salida</th>
+                                <th>Fecha Regreso</th>
+                                <th>Disponibilidad</th>
+                                <th width="200">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="crucero : ${cruceros}">
+                                <td>
+                                    <span class="id-badge" th:text="${crucero.idCrucero}"></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-ship text-primary me-2"></i>
+                                    <strong th:text="${crucero.barco?.nombre}"></strong>
+                                    <small class="text-muted d-block" th:text="'Modelo: ' + ${crucero.barco?.modelo?.nombre}"></small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                    <span th:text="${crucero.puertoOrigen?.nombre}"></span>
+                                    <small class="text-muted d-block" th:text="${crucero.puertoOrigen?.ciudad?.nombre}"></small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-flag-checkered text-info me-2"></i>
+                                    <span th:text="${crucero.puertoDestino?.nombre}"></span>
+                                    <small class="text-muted d-block" th:text="${crucero.puertoDestino?.ciudad?.nombre}"></small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-calendar-alt text-warning me-2"></i>
+                                    <span th:text="${#dates.format(crucero.fechaSalida, 'dd/MM/yyyy')}"></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-calendar-check text-warning me-2"></i>
+                                    <span th:text="${#dates.format(crucero.fechaRegreso, 'dd/MM/yyyy')}"></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <small>
+                                            <i class="fas fa-users me-1"></i>
+                                            <span th:text="${crucero.pasajerosRegistrados != null ? crucero.pasajerosRegistrados : 0}"></span> pasajeros
+                                        </small>
+                                        <small>
+                                            <i class="fas fa-bed me-1"></i>
+                                            <span th:text="${crucero.camarotesDisponibles != null ? crucero.camarotesDisponibles : 0}"></span> camarotes
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group-responsive d-flex flex-nowrap gap-2">
+                                        <a th:href="@{/cruceros/editar/{id}(id=${crucero.idCrucero})}"
+                                            class="btn btn-primary btn-sm btn-custom flex-fill"
+                                            title="Editar crucero">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <a th:href="@{/cruceros/eliminar/{id}(id=${crucero.idCrucero})}"
+                                            class="btn btn-danger btn-sm btn-custom flex-fill eliminar-btn"
+                                            th:attr="data-crucero-id=${crucero.idCrucero}, data-crucero-info=${crucero.barco?.nombre + ' - ' + crucero.puertoOrigen?.nombre + ' a ' + crucero.puertoDestino?.nombre}"
+                                            title="Eliminar crucero">
+                                            <i class="fas fa-trash me-1"></i>Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        // Función para confirmar eliminación
+        function confirmarEliminacion(element) {
+            const cruceroId = element.getAttribute('data-crucero-id');
+            const cruceroInfo = element.getAttribute('data-crucero-info');
+            const deleteUrl = `/cruceros/eliminar/${cruceroId}`;
+            
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `¿Estás seguro de que deseas eliminar el crucero <strong>"${cruceroInfo}"</strong>?<br><br>Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = deleteUrl;
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // Inicializar DataTables
+            const tableElement = document.getElementById('tablaCruceros');
+            if (tableElement) {
+                const table = $('#tablaCruceros').DataTable({
+                    paging: true,
+                    ordering: true,
+                    info: true,
+                    searching: true,
+                    lengthMenu: [5, 10, 25, 50],
+                    pageLength: 10,
+                    language: {
+                        "search": "Buscar:",
+                        "lengthMenu": "Mostrar _MENU_ cruceros por página",
+                        "zeroRecords": "No se encontraron cruceros que coincidan con la búsqueda",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ cruceros",
+                        "infoEmpty": "No hay cruceros disponibles",
+                        "infoFiltered": "(filtrado de _MAX_ cruceros totales)",
+                        "paginate": {
+                            "first": "Primero",
+                            "last": "Último",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        }
+                    },
+                    columnDefs: [{
+                        orderable: false,
+                        targets: 7 // Columna de acciones no ordenable
+                    }]
+                });
+
+                // Búsqueda personalizada
+                $('#searchInput').on('keyup', function() {
+                    table.search(this.value).draw();
+                });
+                
+                // Asignar eventos a los botones de eliminar
+                $('.eliminar-btn').on('click', function(e) {
+                    e.preventDefault();
+                    confirmarEliminacion(this);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

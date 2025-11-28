@@ -13,35 +13,35 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class CruceroProgramadoServiceImpl implements ICruceroProgramadoService {
 
-	private final ICruceroProgramadoRepo cruceroRepo;
+    private final ICruceroProgramadoRepo cruceroRepo;
 
-	public CruceroProgramadoServiceImpl(ICruceroProgramadoRepo cruceroRepo) {
-		this.cruceroRepo = cruceroRepo;
-	}
+    public CruceroProgramadoServiceImpl(ICruceroProgramadoRepo cruceroRepo) {
+        this.cruceroRepo = cruceroRepo;
+    }
 
-	@Override
-	public CruceroProgramado guardar(CruceroProgramado obj) {
-		return cruceroRepo.save(obj);
-	}
+    @Override
+    public CruceroProgramado guardar(CruceroProgramado obj) {
+        return cruceroRepo.save(obj);
+    }
 
-	@Override
-	public List<CruceroProgramado> listar() {
-		return cruceroRepo.findAll();
-	}
+    @Override
+    public List<CruceroProgramado> listar() {
+        return cruceroRepo.findAllWithRelations(); // Usar el método con JOIN FETCH
+    }
 
-	@Override
-	public CruceroProgramado leerPorId(Integer id) {
-		return cruceroRepo.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Crucero Programado no encontrado con ID: " + id));
-	}
+    @Override
+    public CruceroProgramado leerPorId(Integer id) {
+        return cruceroRepo.findByIdWithRelations(id)
+                .orElseThrow(() -> new EntityNotFoundException("Crucero Programado no encontrado con ID: " + id));
+    }
 
-	@Override
-	public boolean eliminar(Integer id) {
-		if (cruceroRepo.existsById(id)) {
-			cruceroRepo.deleteById(id);
-			return true;
-		} else {
-			return false;
-		}
-	}
+    @Override
+    public boolean eliminar(Integer id) {
+        if (cruceroRepo.existsById(id)) {
+            cruceroRepo.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
