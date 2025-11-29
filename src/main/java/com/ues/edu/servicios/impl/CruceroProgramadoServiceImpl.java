@@ -44,4 +44,10 @@ public class CruceroProgramadoServiceImpl implements ICruceroProgramadoService {
             return false;
         }
     }
+
+	@Override
+	public long contarCruceros() {
+		// TODO Auto-generated method stub
+		return cruceroRepo.count();
+	}
 }
