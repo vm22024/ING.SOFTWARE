@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${naviera.idNaviera} != null ? 'Editar Naviera - CRUISEMANAGER' : 'Nueva Naviera - CRUISEMANAGER'">Formulario Naviera</title>
+
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Variables de colores */
+        :root {
+            --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
+            --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            --hover-transition: all 0.3s ease-in-out;
+            --success-gradient: linear-gradient(45deg, #198754, #20c997);
+            --danger-color: #dc3545;
+            --ocean-gradient: linear-gradient(45deg, #0d6efd, #17a2b8);
+        }
+
+        /* Estilos generales */
+        body {
+            background: var(--background-gradient);
+            font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Card principal */
+        .main-card {
+            border-radius: 1.2rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-top: 2rem;
+            border: none;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-header-custom {
+            background: var(--ocean-gradient);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Botones */
+        .btn-custom {
+            border-radius: 2rem;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: var(--hover-transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-success-custom {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-secondary-custom {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+        }
+
+        /* Formularios */
+        .form-container {
+            padding: 2rem;
+        }
+
+        .form-label-custom {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-control-custom, .form-select-custom {
+            border-radius: 1rem;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: var(--hover-transition);
+            font-size: 1rem;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .form-control-custom.is-invalid, .form-select-custom.is-invalid {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        /* Alertas */
+        .alert-custom {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-custom .btn-close {
+            padding: 0.75rem;
+        }
+
+        /* Iconos */
+        .form-icon {
+            color: #0d6efd;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Grupo de botones */
+        .btn-group-custom {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f8f9fa;
+        }
+
+        /* Badge para ID */
+        .id-badge {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 1.5rem;
+            }
+            .btn-group-custom {
+                flex-direction: column;
+            }
+            .btn-group-custom .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .card-header-custom {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            .id-badge {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Estados de validación */
+        .invalid-feedback {
+            display: block;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-text-custom {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Loading state */
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+        }
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .duplicate-warning {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .duplicate-warning.show {
+            display: block;
+        }
+        
+        .is-duplicate {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+        
+        .checking-duplicate {
+            border-color: #ffc107 !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- Card Principal -->
+        <div class="card main-card fade-in">
+            <!-- Header -->
+            <div class="card-header card-header-custom">
+                <div class="d-flex align-items-center flex-wrap">
+                    <i class="fas" th:classappend="${naviera.idNaviera} != null ? 'fa-edit' : 'fa-ship'"></i>
+                    <span th:text="${naviera.idNaviera} != null ? 'Editar Naviera' : 'Nueva Naviera'"></span>
+                    <span th:if="${naviera.idNaviera} != null" class="id-badge">
+                        ID: <span th:text="${naviera.idNaviera}"></span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Body del Formulario -->
+            <div class="form-container">
+                <!-- Alertas de notificación -->
+                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${ok}">Operación realizada con éxito</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}">Ocurrió un error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- Formulario -->
+                <form th:action="${naviera.idNaviera} != null ? @{/navieras/actualizar/{id}(id=${naviera.idNaviera})} : @{/navieras}"
+                      th:object="${naviera}" method="post" class="row g-4" novalidate id="navieraForm">
+
+                    <input type="hidden" th:field="*{idNaviera}" id="navieraId" />
+
+                    <!-- Errores globales -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="col-12">
+                        <div class="alert alert-danger alert-custom" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Errores encontrados:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Nombre de la Naviera -->
+                    <div class="col-md-6">
+                        <label for="nombre" class="form-label-custom">
+                            <i class="fas fa-ship form-icon"></i>
+                            Nombre de la Naviera
+                        </label>
+                        <input type="text" th:field="*{nombre}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('nombre')} ? ' is-invalid'"
+                               required placeholder="Ingrese el nombre de la naviera"
+                               maxlength="255" id="nombre" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                        <div class="duplicate-warning" id="duplicateWarning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <span id="duplicateMessage">Ya existe una naviera con este nombre</span>
+                        </div>
+                        <div class="form-text-custom">Ejemplo: Royal Caribbean, Carnival Cruise Line, MSC Cruceros</div>
+                    </div>
+
+                    <!-- Campo: País -->
+                    <div class="col-md-6">
+                        <label for="pais" class="form-label-custom">
+                            <i class="fas fa-flag form-icon"></i>
+                            País
+                        </label>
+                        <select th:field="*{pais}"
+                                class="form-select form-select-custom"
+                                th:classappend="${#fields.hasErrors('pais')} ? ' is-invalid'"
+                                id="pais">
+                            <option value="">Seleccione un país</option>
+                            <option value="El Salvador">El Salvador</option>
+                            <option value="Estados Unidos">Estados Unidos</option>
+                            <option value="México">México</option>
+                            <option value="Panamá">Panamá</option>
+                            <option value="Costa Rica">Costa Rica</option>
+                            <option value="Italia">Italia</option>
+                            <option value="España">España</option>
+                            <option value="Francia">Francia</option>
+                            <option value="Alemania">Alemania</option>
+                            <option value="Reino Unido">Reino Unido</option>
+                            <option value="Noruega">Noruega</option>
+                            <option value="Grecia">Grecia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('pais')}" 
+                             th:errors="*{pais}"></div>
+                        <div class="form-text-custom">Seleccione el país de origen de la naviera</div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="col-12">
+                        <div class="alert alert-info alert-custom">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3 fs-5"></i>
+                                <div>
+                                    <strong>Información importante:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>El nombre de la naviera debe ser único en el sistema</li>
+                                        <li>La naviera puede tener múltiples barcos asociados</li>
+                                        <li>El campo de país es opcional pero recomendado</li>
+                                        <li>Los cambios se reflejarán inmediatamente en el sistema</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="col-12">
+                        <div class="btn-group-custom">
+                            <button type="submit" class="btn btn-success-custom btn-custom" id="submitBtn">
+                                <i class="fas" th:classappend="${naviera.idNaviera} != null ? 'fa-save' : 'fa-plus'"></i>
+                                <span th:text="${naviera.idNaviera} != null ? 'Guardar Cambios' : 'Crear Naviera'"></span>
+                            </button>
+                            <a th:href="@{/navieras}" class="btn btn-secondary-custom btn-custom" id="cancelBtn">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('navieraForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const nombreInput = document.getElementById('nombre');
+            const paisSelect = document.getElementById('pais');
+            const duplicateWarning = document.getElementById('duplicateWarning');
+            const duplicateMessage = document.getElementById('duplicateMessage');
+            const navieraId = document.getElementById('navieraId').value;
+            let formChanged = false;
+            let isCheckingDuplicate = false;
+            let duplicateCheckTimeout = null;
+
+            // Detectar cambios en el formulario
+            const formFields = form.querySelectorAll('input, select, textarea');
+            formFields.forEach(field => {
+                field.addEventListener('input', function() {
+                    formChanged = true;
+                });
+            });
+
+            // Validación en tiempo real para duplicados
+            nombreInput.addEventListener('input', function() {
+                clearTimeout(duplicateCheckTimeout);
+                
+                // Remover estados anteriores
+                nombreInput.classList.remove('is-duplicate', 'checking-duplicate');
+                duplicateWarning.classList.remove('show');
+                
+                const nombre = this.value.trim();
+                
+                if (nombre.length < 2) {
+                    return; // No validar si el nombre es muy corto
+                }
+                
+                // Mostrar estado de "verificando"
+                nombreInput.classList.add('checking-duplicate');
+                
+                // Hacer debounce para no saturar el servidor
+                duplicateCheckTimeout = setTimeout(() => {
+                    verificarDuplicado(nombre);
+                }, 500);
+            });
+
+            // Función para verificar duplicado en el servidor
+            function verificarDuplicado(nombre) {
+                if (isCheckingDuplicate) return;
+                
+                isCheckingDuplicate = true;
+                
+                // Simular verificación (en un caso real, harías una petición AJAX)
+                setTimeout(() => {
+                    const esDuplicado = verificarDuplicadoLocalmente(nombre);
+                    
+                    if (esDuplicado) {
+                        nombreInput.classList.remove('checking-duplicate');
+                        nombreInput.classList.add('is-duplicate');
+                        duplicateMessage.textContent = `Ya existe una naviera con el nombre "${nombre}"`;
+                        duplicateWarning.classList.add('show');
+                        submitBtn.disabled = true;
+                    } else {
+                        nombreInput.classList.remove('checking-duplicate', 'is-duplicate');
+                        duplicateWarning.classList.remove('show');
+                        submitBtn.disabled = false;
+                    }
+                    
+                    isCheckingDuplicate = false;
+                }, 300);
+            }
+
+            // Función temporal para simular verificación de duplicados
+            function verificarDuplicadoLocalmente(nombre) {
+                // En una implementación real, esto sería una llamada AJAX al servidor
+                const nombresExistentes = [
+                    'Royal Caribbean',
+                    'Carnival Cruise Line', 
+                    'MSC Cruceros',
+                    'Norwegian Cruise Line'
+                ];
+                
+                return nombresExistentes.some(existente => 
+                    existente.toLowerCase() === nombre.toLowerCase()
+                );
+            }
+
+            // Validación en tiempo real para campos requeridos
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid')) {
+                        validateField(this);
+                    }
+                });
+            });
+
+            function validateField(field) {
+                if (field.value.trim() === '') {
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+
+            // Confirmación al enviar el formulario
+            form.addEventListener('submit', function(e) {
+                // Validar campos requeridos antes de mostrar SweetAlert
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (input.value.trim() === '') {
+                        input.classList.add('is-invalid');
+                        isValid = false;
+                    }
+                });
+
+                // Validar duplicados antes de enviar
+                const nombre = nombreInput.value.trim();
+                if (verificarDuplicadoLocalmente(nombre)) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Naviera duplicada',
+                        html: `La naviera "<strong>${nombre}</strong>" ya existe en el sistema.<br>Por favor, use un nombre diferente.`,
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Campos incompletos',
+                        text: 'Por favor, complete todos los campos requeridos.',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return;
+                }
+
+                e.preventDefault(); // Prevenir envío inmediato
+
+                const isEdit = document.getElementById('navieraId').value !== '';
+                const actionText = isEdit ? 'actualizar' : 'crear';
+                const successText = isEdit ? 'actualizada' : 'creada';
+                const pais = paisSelect.options[paisSelect.selectedIndex].text;
+
+                Swal.fire({
+                    title: `¿Confirmar ${actionText}?`,
+                    html: `
+                        <div class="text-start">
+                            <p>¿Está seguro de que desea ${actionText} la naviera?</p>
+                            <div class="bg-light p-3 rounded">
+                                <strong>Nombre:</strong> ${nombre}<br>
+                                <strong>País:</strong> ${pais || 'No especificado'}
+                            </div>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Sí, ${actionText}`,
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Mostrar loading en el botón
+                        submitBtn.classList.add('btn-loading');
+                        
+                        // Enviar formulario después de un breve delay para mejor UX
+                        setTimeout(() => {
+                            form.submit();
+                        }, 500);
+                    }
+                });
+            });
+
+            // Confirmación al cancelar con cambios sin guardar
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Salir sin guardar?',
+                        text: 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#dc3545',
+                        confirmButtonText: 'Sí, salir',
+                        cancelButtonText: 'Seguir editando',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = cancelBtn.href;
+                        }
+                    });
+                }
+            });
+
+            // Manejo elegante del beforeunload sin interferir con el envío del formulario
+            let isSubmitting = false;
+            
+            form.addEventListener('submit', function() {
+                isSubmitting = true;
+            });
+
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged && !isSubmitting) {
+                    e.preventDefault();
+                    e.returnValue = 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
+                    return 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
