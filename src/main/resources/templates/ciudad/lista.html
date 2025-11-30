@@ -178,6 +178,10 @@ body {
 <body>
 	<div class="container my-5">
 		<!-- Card Principal -->
+		<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+					<li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Lista de Ciudades</li>
+				</ol>
 		<div class="card main-card">
 			<!-- Header con título y controles -->
 			<div
@@ -201,9 +205,7 @@ body {
 					<a th:href="@{/ciudades/nuevo}" class="btn btn-new btn-custom">
 						<i class="fas fa-plus me-2"></i>Nueva Ciudad
 					</a>
-					<a th:href="@{/dashboard}" class="btn btn-warning btn-custom"> 
-						<i class="fas fa-sign-out-alt me-2"></i>Regresar
-					</a>
+					
 				</div>
 			</div>
 

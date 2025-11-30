@@ -217,6 +217,13 @@
 </head>
 <body>
     <div class="container my-5">
+    <nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+					<li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Lista de Puertos</li>
+				</ol>
+			</nav>
+			
         <!-- Card Principal -->
         <div class="card main-card fade-in">
             <!-- Header con título y controles -->
@@ -239,9 +246,6 @@
                     </div>
                     <a th:href="@{/puertos/nuevo}" class="btn btn-new btn-custom">
                         <i class="fas fa-plus me-2"></i>Nuevo Puerto
-                    </a>
-                    <a th:href="@{/dashboard}" class="btn btn-warning-custom btn-custom">
-                        <i class="fas fa-arrow-left me-2"></i>Regresar
                     </a>
                 </div>
             </div>
