@@ -377,7 +377,7 @@ body {
 
 			<!-- Exportar Cruceros -->
 			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
-				<a th:href="@{/reportes/excel/cruceros}" class="dashboard-link">
+				<a th:href="@{/reportes/excel/cruceroProgramado}" class="dashboard-link">
 					<div class="card excel-card">
 						<div class="card-header">Cruceros Programados</div>
 						<div class="card-body">
@@ -406,7 +406,7 @@ body {
 			</div>
 
 			<!-- Exportar Pasajeros -->
-			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
 				<a th:href="@{/reportes/excel/pasajeros}" class="dashboard-link">
 					<div class="card excel-card">
 						<div class="card-header">Total Viajes por Pasajero</div>
@@ -421,7 +421,7 @@ body {
 			</div>
 
 			<!-- Exportar Barcos -->
-			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
 				<a th:href="@{/reportes/excel/barcos}" class="dashboard-link">
 					<div class="card excel-card">
 						<div class="card-header">Inventario de Barcos</div>
