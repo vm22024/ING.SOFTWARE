@@ -10,43 +10,35 @@ import org.springframework.stereotype.Service;
 
 import com.ues.edu.modelo.Usuario;
 import com.ues.edu.repositorios.IUsuarioRepo;
+import com.ues.edu.servicios.IRolService;
 import com.ues.edu.servicios.IUsuarioService;
 
 import jakarta.persistence.EntityNotFoundException;
 
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import com.ues.edu.modelo.Usuario;
 import com.ues.edu.modelo.Rol;
-import com.ues.edu.repositorios.IUsuarioRepo;
-import com.ues.edu.servicios.IUsuarioService;
 
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService {
 
     private final IUsuarioRepo usuarioRepo;
     private final PasswordEncoder passwordEncoder;
-
+    private final IRolService rolService;
+    
     @Autowired
-    public UsuarioServiceImpl(IUsuarioRepo usuarioRepo, PasswordEncoder passwordEncoder) {
+    public UsuarioServiceImpl(IUsuarioRepo usuarioRepo, PasswordEncoder passwordEncoder,IRolService rolService) {
         this.usuarioRepo = usuarioRepo;
         this.passwordEncoder = passwordEncoder;
+        this.rolService = rolService;
     }
 
-    // 🔽🔽🔽 CAMBIA ESTE MÉTODO COMPLETAMENTE 🔽🔽🔽
+   
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepo.findByUsername(username)
@@ -82,72 +74,78 @@ public class UsuarioServiceImpl implements IUsuarioService {
             authorities
         );
     }
-    // 🔼🔼🔼 HASTA AQUÍ EL MÉTODO MODIFICADO 🔼🔼🔼
+ 
 
-    @Override
-    public Usuario guardar(Usuario obj) {
-        boolean hayUsuarios = usuarioRepo.count() > 0;
+   @Override
+public Usuario guardar(Usuario obj) {
+    boolean hayUsuarios = usuarioRepo.count() > 0;
 
-        // ===== CREACIÓN =====
-        if (obj.getId() == null) {
+    // ===== CREACIÓN =====
+    if (obj.getId() == null) {
 
-            if (usuarioRepo.existsByDui(obj.getDui()))
-                throw new IllegalArgumentException("El número de DUI ya está registrado.");
-
-            if ("admin".equalsIgnoreCase(obj.getUsername()) && hayUsuarios)
-                throw new IllegalArgumentException("No se puede crear otro usuario con nombre de usuario 'admin'.");
-
-            if ("admin".equalsIgnoreCase(obj.getPassword()) && hayUsuarios)
-                throw new IllegalArgumentException("La contraseña no puede ser 'admin'. Elige una más segura.");
-
-            if (usuarioRepo.existsByUsername(obj.getUsername()))
-                throw new IllegalArgumentException("Ya existe un usuario con ese nombre de usuario.");
-
-            if (obj.getPassword() == null || obj.getPassword().isBlank())
-                throw new IllegalArgumentException("La contraseña es obligatoria.");
-
-            obj.setPassword(passwordEncoder.encode(obj.getPassword()));
-
-            // 🔽🔽🔽 NUEVO: ASIGNAR ROL AUTOMÁTICAMENTE SEGÚN EL CARGO 🔽🔽🔽
-            if (obj.getRoles() == null || obj.getRoles().isEmpty()) {
-                Rol rol = asignarRolSegunCargo(obj.getCargo());
-                if (rol != null) {
-                    obj.setRoles(List.of(rol));
-                }
-            }
-
-            return usuarioRepo.save(obj);
-        }
-
-        // ===== ACTUALIZACIÓN =====
-        Usuario actual = usuarioRepo.findById(obj.getId())
-            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + obj.getId()));
-
-        // Si es admin protegido: congelar username y password (no lanzar excepción)
-        boolean adminProtegido = actual.isEsAdmin() || "admin".equalsIgnoreCase(actual.getUsername());
-        if (adminProtegido) {
-            obj.setUsername(actual.getUsername());
-        }
-
-        // DUI/username duplicados en otro registro
-        if (obj.getDui() != null && usuarioRepo.existsByDuiAndIdNot(obj.getDui(), obj.getId()))
+        if (usuarioRepo.existsByDui(obj.getDui()))
             throw new IllegalArgumentException("El número de DUI ya está registrado.");
 
-        if (obj.getUsername() != null && usuarioRepo.existsByUsernameAndIdNot(obj.getUsername(), obj.getId()))
+        if ("admin".equalsIgnoreCase(obj.getUsername()) && hayUsuarios)
+            throw new IllegalArgumentException("No se puede crear otro usuario con nombre de usuario 'admin'.");
+
+        if ("admin".equalsIgnoreCase(obj.getPassword()) && hayUsuarios)
+            throw new IllegalArgumentException("La contraseña no puede ser 'admin'. Elige una más segura.");
+
+        if (usuarioRepo.existsByUsername(obj.getUsername()))
             throw new IllegalArgumentException("Ya existe un usuario con ese nombre de usuario.");
 
-        // Password: conservar si viene vacía; encriptar si viene en claro
-        if (obj.getPassword() == null || obj.getPassword().isBlank()) {
-            obj.setPassword(actual.getPassword());
-        } else {
-            obj.setPassword(encodeIfNeeded(obj.getPassword()));
-        }
+        if (obj.getPassword() == null || obj.getPassword().isBlank())
+            throw new IllegalArgumentException("La contraseña es obligatoria.");
 
-        // Preservar bandera admin (por seguridad)
-        obj.setEsAdmin(actual.isEsAdmin());
+        obj.setPassword(passwordEncoder.encode(obj.getPassword()));
+
+        // 🔽🔽🔽 CORREGIDO: SIEMPRE asignar rol automáticamente según el cargo 🔽🔽🔽
+        Rol rol = asignarRolSegunCargo(obj.getCargo());
+        if (rol != null) {
+            obj.setRoles(List.of(rol));
+            System.out.println("✅ Rol asignado automáticamente: " + rol.getNombre() + " para cargo: " + obj.getCargo());
+        } else {
+            System.out.println("⚠️ No se pudo asignar rol para cargo: " + obj.getCargo());
+        }
 
         return usuarioRepo.save(obj);
     }
+
+    Usuario actual = usuarioRepo.findById(obj.getId())
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + obj.getId()));
+
+    boolean adminProtegido = actual.isEsAdmin() || "admin".equalsIgnoreCase(actual.getUsername());
+    if (adminProtegido) {
+        obj.setUsername(actual.getUsername());
+    }
+
+    if (obj.getDui() != null && usuarioRepo.existsByDuiAndIdNot(obj.getDui(), obj.getId()))
+        throw new IllegalArgumentException("El número de DUI ya está registrado.");
+
+    if (obj.getUsername() != null && usuarioRepo.existsByUsernameAndIdNot(obj.getUsername(), obj.getId()))
+        throw new IllegalArgumentException("Ya existe un usuario con ese nombre de usuario.");
+
+    if (obj.getPassword() == null || obj.getPassword().isBlank()) {
+        obj.setPassword(actual.getPassword());
+    } else {
+        obj.setPassword(encodeIfNeeded(obj.getPassword()));
+    }
+
+
+    obj.setEsAdmin(actual.isEsAdmin());
+
+   
+    if (obj.getRoles() == null || obj.getRoles().isEmpty()) {
+        Rol rol = asignarRolSegunCargo(obj.getCargo());
+        if (rol != null) {
+            obj.setRoles(List.of(rol));
+            System.out.println("✅ Rol asignado automáticamente en actualización: " + rol.getNombre());
+        }
+    }
+
+    return usuarioRepo.save(obj);
+}
 
     @Override
     public boolean eliminar(Long id) {
@@ -198,19 +196,46 @@ public class UsuarioServiceImpl implements IUsuarioService {
     }
     
     private Rol asignarRolSegunCargo(String cargo) {
-     
-        if (cargo == null) return null;
+        if (cargo == null) {
+            System.out.println("⚠️ Cargo es null, asignando ROLE_USER por defecto");
+            return rolService.buscarPorNombre("ROLE_USER");
+        }
         
         String nombreRol;
+        
+        // Mapeo de cargos a roles
         if (cargo.equalsIgnoreCase("Administrador") || cargo.equalsIgnoreCase("Administrador del Sistema")) {
             nombreRol = "ROLE_ADMIN";
+
+        
         } else {
-            nombreRol = "ROLE_USER";
+            nombreRol = "ROLE_USER"; // Rol por defecto
         }
-      
-        Rol rol = new Rol();
-        rol.setNombre(nombreRol);
-      
-        return rol;
+        
+        System.out.println("🔍 Buscando rol: " + nombreRol + " para cargo: " + cargo);
+        
+        try {
+            Rol rol = rolService.buscarPorNombre(nombreRol);
+            
+            if (rol == null) {
+                System.out.println("⚠️ Rol " + nombreRol + " no encontrado, creando nuevo...");
+                rol = new Rol();
+                rol.setNombre(nombreRol);
+                rol.setDescripcion("Rol asignado automáticamente para cargo: " + cargo);
+                rol = rolService.guardar(rol);
+                System.out.println("✅ Nuevo rol creado: " + rol.getNombre());
+            } else {
+                System.out.println("✅ Rol encontrado: " + rol.getNombre() + " (ID: " + rol.getId() + ")");
+            }
+            
+            return rol;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error al asignar rol: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
+        
+       
 }

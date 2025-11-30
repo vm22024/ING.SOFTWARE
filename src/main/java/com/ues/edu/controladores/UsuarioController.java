@@ -43,11 +43,14 @@ public class UsuarioController {
 
     // Nuevo - CAMBIADO
     @GetMapping("/nuevo")
-    public String mostrarFormulario(Model model) {
-        model.addAttribute("usuario", new Usuario());
+    public String mostrarFormularioNuevo(Model model) {
+        Usuario usuario = new Usuario();
+        usuario.setActivo(true); // Por defecto activo
+        
+        model.addAttribute("usuario", usuario);
         model.addAttribute("esEdicion", false);
         model.addAttribute("adminProtegido", false);
-        return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+        return "usuarios/formulario";
     }
 
     // Guardar nuevo - CAMBIADO
@@ -69,38 +72,42 @@ public class UsuarioController {
             model.addAttribute("adminProtegido", false);
             return "usuarios/formulario";
         }
+        
         try {
             usuarioService.guardar(usuario);
             ra.addFlashAttribute("ok", "Usuario guardado correctamente.");
             return "redirect:/usuarios";
 
         } catch (IllegalArgumentException ex) {
-            String msg = ex.getMessage() != null ? ex.getMessage() : "Datos inválidos.";
-            String lower = msg.toLowerCase();
-            if (lower.contains("dui")) {
-                br.rejectValue("dui", "dui.duplicado", "El número de DUI ya está registrado.");
-            } else if (lower.contains("usuario") || lower.contains("username")) {
-                br.rejectValue("username", "username.duplicado", "Ya existe un usuario con ese nombre de usuario.");
-            } else if (lower.contains("contraseña") || lower.contains("password")) {
-                br.rejectValue("password", "password.invalida", msg);
+            // Mostrar el mensaje real del error
+            String errorMsg = ex.getMessage();
+            if (errorMsg.contains("DUI") || errorMsg.contains("dui")) {
+                br.rejectValue("dui", "dui.duplicado", errorMsg);
+            } else if (errorMsg.contains("username") || errorMsg.contains("usuario")) {
+                br.rejectValue("username", "username.duplicado", errorMsg);
+            } else if (errorMsg.contains("contraseña") || errorMsg.contains("password")) {
+                br.rejectValue("password", "password.invalida", errorMsg);
             } else {
-                model.addAttribute("error", msg);
+                // Mostrar el error real en lugar del genérico
+                model.addAttribute("error", errorMsg);
             }
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
 
         } catch (DataIntegrityViolationException ex) {
             br.rejectValue("dui", "dui.duplicado", "El número de DUI ya está registrado.");
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
 
         } catch (Exception ex) {
-            model.addAttribute("error", "Ocurrió un error inesperado. Inténtalo nuevamente.");
+            // Mostrar el error real en lugar del genérico
+            String errorMsg = ex.getMessage() != null ? ex.getMessage() : "Error desconocido";
+            model.addAttribute("error", "Error: " + errorMsg);
             model.addAttribute("esEdicion", false);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
         }
     }
 
@@ -113,14 +120,13 @@ public class UsuarioController {
             model.addAttribute("esEdicion", true);
             boolean adminProtegido = usuario.isEsAdmin() || "admin".equalsIgnoreCase(usuario.getUsername());
             model.addAttribute("adminProtegido", adminProtegido);
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
             return "redirect:/usuarios";
         }
     }
 
-    // Actualizar - CAMBIADO
     @PostMapping("/actualizar/{id}")
     public String actualizar(@PathVariable("id") Long id,
                              @Valid @ModelAttribute("usuario") Usuario usuario,
@@ -135,11 +141,9 @@ public class UsuarioController {
 
             boolean adminProtegido = existente.isEsAdmin() || "admin".equalsIgnoreCase(existente.getUsername());
 
-            
             if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
                 usuario.setPassword(existente.getPassword());
             } else {
-                // Si se proporcionó nueva contraseña, validar longitud
                 if (usuario.getPassword().length() < 6) {
                     br.rejectValue("password", "password.invalida", "La contraseña debe tener al menos 6 caracteres");
                 }
@@ -181,19 +185,19 @@ public class UsuarioController {
             } catch (Exception ignore) {
                 model.addAttribute("adminProtegido", false);
             }
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
 
         } catch (DataIntegrityViolationException ex) {
             br.rejectValue("dui", "dui.duplicado", "El número de DUI ya está registrado.");
             model.addAttribute("esEdicion", true);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
 
         } catch (Exception ex) {
             model.addAttribute("error", "Error al actualizar el usuario: " + ex.getMessage());
             model.addAttribute("esEdicion", true);
             model.addAttribute("adminProtegido", false);
-            return "usuarios/formulario"; // ← Cambiado de "form" a "formulario"
+            return "usuarios/formulario";
         }
     }
 

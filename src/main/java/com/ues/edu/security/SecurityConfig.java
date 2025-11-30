@@ -13,12 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.ues.edu.servicios.IUsuarioService;
-
 @Configuration
 public class SecurityConfig {
 
     @Autowired
-    @Lazy  // 🔹 Evita el ciclo de dependencias
+    @Lazy
     private IUsuarioService usuarioService;
 
     @Bean
@@ -45,22 +44,27 @@ public class SecurityConfig {
             .authenticationProvider(authProvider())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+ 
                 .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 
-                // 🔧 CORREGIDO: Rutas solo para ADMIN
-                .requestMatchers("/usuarios/nuevo", "/usuarios/editar/**", "/usuarios/eliminar/**", 
-                               "/roles/**", "/reportes/**").hasRole("ADMIN")
+              
+                .requestMatchers("/usuarios/**", "/roles/**", "/reportes/avanzados/**").hasRole("ADMIN")
                 
-                // 🔧 CORREGIDO: Rutas para ADMIN y USER
-                .requestMatchers("/usuarios/lista", "/usuarios/ver/**").hasAnyRole("ADMIN", "USER")
-                
-                // Rutas del dashboard para usuarios autenticados
+                .requestMatchers(
+                    "/barcos/**", "/navieras/**", "/modelos-barco/**",
+                    "/cruceros/**", "/puertos/**", "/ciudades/**"
+                ).hasAnyRole("ADMIN", "USER")
+        
+                .requestMatchers("/pasajeros/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "USER")
+     
+                .requestMatchers(
+                    "/cruceros/lista", "/cruceros/ver/**"
+                ).hasAnyRole("ADMIN")
+    
+                .requestMatchers("/reportes/**").hasAnyRole("ADMIN")
+      
                 .requestMatchers("/dashboard/**").authenticated()
-                
-                // 🔧 AGREGADO: Rutas del sistema de cruceros
-                .requestMatchers("/barcos/**", "/navieras/**", "/cruceros/**", "/puertos/**", 
-                               "/ciudades/**", "/pasajeros/**", "/reservas/**", "/modelos-barco/**")
-                               .hasAnyRole("ADMIN", "USER")
                 
                 .anyRequest().authenticated()
             )
@@ -78,5 +82,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }
