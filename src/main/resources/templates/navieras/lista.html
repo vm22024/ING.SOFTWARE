@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Navieras - CRUISEMANAGER</title>
+
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Variables de colores */
+        :root {
+            --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
+            --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            --hover-transition: all 0.3s ease-in-out;
+            --warning-gradient: linear-gradient(45deg, #ffc107, #fd7e14);
+            --ocean-gradient: linear-gradient(45deg, #0d6efd, #17a2b8);
+        }
+
+        /* Estilos generales */
+        body {
+            background: var(--background-gradient);
+            font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Card principal */
+        .main-card {
+            border-radius: 1.2rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-top: 2rem;
+            border: none;
+        }
+
+        .card-header-custom {
+            background: var(--ocean-gradient);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 1rem 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: none;
+        }
+
+        /* Tabla */
+        .table-custom thead {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .table-custom thead th {
+            border: none;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+        }
+
+        .table-custom tbody tr {
+            transition: var(--hover-transition);
+        }
+
+        .table-custom tbody tr:hover {
+            background-color: #eef6ff;
+            transform: translateY(-1px);
+        }
+
+        .table-custom tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-color: #dee2e6;
+        }
+
+        /* Botones */
+        .btn-custom {
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            font-weight: 500;
+            transition: var(--hover-transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-new {
+            background: linear-gradient(45deg, #198754, #20c997);
+            color: white;
+        }
+
+        .btn-new:hover {
+            background: linear-gradient(45deg, #157347, #1ba87e);
+            color: white;
+        }
+
+        .btn-warning-custom {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .btn-warning-custom:hover {
+            background: linear-gradient(45deg, #e0a800, #e36407);
+            color: white;
+        }
+
+        /* Búsqueda */
+        .search-container {
+            max-width: 300px;
+        }
+
+        .search-input {
+            border-radius: 2rem;
+            border: 2px solid #e9ecef;
+            padding: 0.5rem 1rem;
+            transition: var(--hover-transition);
+        }
+
+        .search-input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Alertas */
+        .alert-custom {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header-custom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .search-container {
+                max-width: 100%;
+            }
+            .btn-group-responsive {
+                display: flex;
+                gap: 0.5rem;
+            }
+            .btn-group-responsive .btn {
+                flex: 1;
+                font-size: 0.8rem;
+                padding: 0.3rem 0.6rem;
+            }
+            .header-buttons {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.5rem;
+            }
+            .header-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Estados vacíos */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Badge para IDs */
+        .id-badge {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Mensaje sin datos para DataTables */
+        .dataTables_empty {
+            text-align: center !important;
+            padding: 3rem 1rem !important;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* SweetAlert2 personalización */
+        .swal2-popup {
+            border-radius: 1.5rem !important;
+        }
+        .swal2-confirm {
+            border-radius: 2rem !important;
+        }
+        .swal2-cancel {
+            border-radius: 2rem !important;
+        }
+
+        /* Iconos específicos para navieras */
+        .naviera-icon {
+            color: #0d6efd;
+        }
+        .country-icon {
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- Card Principal -->
+        <div class="card main-card fade-in">
+            <!-- Header con título y controles -->
+            <div class="card-header card-header-custom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-ship me-3"></i>
+                    <h1 class="h4 mb-0">Gestión de Navieras</h1>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row align-items-center gap-2 w-100 w-md-auto header-buttons">
+                    <div class="search-container w-100">
+                        <div class="input-group">
+                            <span class="input-group-text search-input border-end-0">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" id="searchInput"
+                                class="form-control search-input border-start-0"
+                                placeholder="Buscar navieras...">
+                        </div>
+                    </div>
+                    <a th:href="@{/navieras/nuevo}" class="btn btn-new btn-custom">
+                        <i class="fas fa-plus me-2"></i>Nueva Naviera
+                    </a>
+                    <a th:href="@{/dashboard}" class="btn btn-warning-custom btn-custom">
+                        <i class="fas fa-arrow-left me-2"></i>Regresar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body p-4">
+                <!-- Alertas de notificación -->
+                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${ok}">Operación realizada con éxito</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}">Ocurrió un error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- Estado vacío cuando no hay navieras -->
+                <div th:if="${#lists.isEmpty(navieras)}" class="text-center py-5">
+                    <div class="empty-state">
+                        <i class="fas fa-ship"></i>
+                        <h5>No hay navieras registradas</h5>
+                        <p class="mb-0">Comienza agregando la primera naviera al sistema.</p>
+                        <a th:href="@{/navieras/nuevo}" class="btn btn-new btn-custom mt-3">
+                            <i class="fas fa-plus me-2"></i>Crear Primera Naviera
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tabla de navieras (solo se muestra si hay datos) -->
+                <div th:if="${not #lists.isEmpty(navieras)}" class="table-responsive">
+                    <table id="tablaNavieras" class="table table-hover table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th width="80">ID</th>
+                                <th>Nombre de la Naviera</th>
+                                <th>País</th>
+                                <th width="200">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Lista de navieras -->
+                            <tr th:each="naviera : ${navieras}">
+                                <td>
+                                    <span class="id-badge" th:text="${naviera.idNaviera}"></span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-ship naviera-icon me-2"></i>
+                                    <strong th:text="${naviera.nombre}"></strong>
+                                </td>
+                                <td>
+                                    <i class="fas fa-flag country-icon me-2"></i>
+                                    <span th:text="${naviera.pais} ?: 'No especificado'" 
+                                          th:class="${naviera.pais} ? '' : 'text-muted'"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group-responsive d-flex flex-nowrap gap-2">
+                                        <a th:href="@{/navieras/editar/{id}(id=${naviera.idNaviera})}"
+                                           class="btn btn-primary btn-sm btn-custom flex-fill"
+                                           title="Editar naviera">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <a href="#" 
+                                           class="btn btn-danger btn-sm btn-custom flex-fill delete-btn"
+                                           th:attr="data-naviera-id=${naviera.idNaviera}, data-naviera-name=${naviera.nombre}"
+                                           title="Eliminar naviera">
+                                            <i class="fas fa-trash me-1"></i>Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        // Inicializar DataTables solo si la tabla existe
+        $(document).ready(function() {
+            const tableElement = document.getElementById('tablaNavieras');
+
+            if (tableElement) {
+                const table = $('#tablaNavieras').DataTable({
+                    paging: true,
+                    ordering: true,
+                    info: true,
+                    searching: true,
+                    lengthMenu: [5, 10, 25, 50],
+                    pageLength: 10,
+                    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+                    language: {
+                        "search": "Buscar:",
+                        "lengthMenu": "Mostrar _MENU_ navieras por página",
+                        "zeroRecords": "No se encontraron navieras que coincidan con la búsqueda",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ navieras",
+                        "infoEmpty": "No hay navieras disponibles",
+                        "infoFiltered": "(filtrado de _MAX_ navieras totales)",
+                        "paginate": {
+                            "first": "Primero",
+                            "last": "Último",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        },
+                        "emptyTable": "No hay navieras registradas en el sistema"
+                    },
+                    columnDefs: [
+                        { 
+                            orderable: false, 
+                            targets: 3 // Columna de acciones no ordenable
+                        }
+                    ],
+                    drawCallback: function(settings) {
+                        // Personalizar el mensaje de tabla vacía
+                        const api = this.api();
+                        if (api.rows().count() === 0) {
+                            $('.dataTables_empty').html(
+                                '<div class="empty-state">' +
+                                '<i class="fas fa-search"></i>' +
+                                '<h5>No se encontraron navieras</h5>' +
+                                '<p class="mb-0">Intenta con otros términos de búsqueda.</p>' +
+                                '</div>'
+                            );
+                        }
+                    }
+                });
+
+                // Búsqueda personalizada
+                $('#searchInput').on('keyup', function() {
+                    table.search(this.value).draw();
+                });
+            }
+
+            // SweetAlert2 para eliminar navieras
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const navieraId = this.getAttribute('data-naviera-id');
+                    const navieraName = this.getAttribute('data-naviera-name');
+                    const deleteUrl = `/navieras/eliminar/${navieraId}`;
+
+                    Swal.fire({
+                        title: '¿Eliminar Naviera?',
+                        html: `
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                                <h5 class="text-danger">¿Está seguro de eliminar la naviera?</h5>
+                                <p class="mb-2"><strong>"${navieraName}"</strong></p>
+                                <p class="text-muted">Esta acción no se puede deshacer. Si la naviera tiene barcos asociados, no podrá ser eliminada.</p>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'border-radius-15'
+                        },
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'btn btn-danger btn-custom me-2',
+                            cancelButton: 'btn btn-secondary btn-custom'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Mostrar loading
+                            Swal.fire({
+                                title: 'Eliminando...',
+                                text: 'Por favor espere',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            // Redirigir para eliminar
+                            setTimeout(() => {
+                                window.location.href = deleteUrl;
+                            }, 1000);
+                        }
+                    });
+                });
+            });
+
+            // SweetAlert2 para éxito automático si hay mensaje de ok
+            const okMessage = document.querySelector('.alert-success');
+            if (okMessage) {
+                const messageText = okMessage.querySelector('span').textContent;
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: messageText,
+                    icon: 'success',
+                    confirmButtonColor: '#198754',
+                    confirmButtonText: 'Aceptar',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+
+            // SweetAlert2 para error automático si hay mensaje de error
+            const errorMessage = document.querySelector('.alert-danger');
+            if (errorMessage) {
+                const errorText = errorMessage.querySelector('span').textContent;
+                Swal.fire({
+                    title: 'Error',
+                    text: errorText,
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+
+            // Confirmación al regresar al dashboard si hay datos en la tabla
+            const backButton = document.querySelector('a[href*="/dashboard"]');
+            if (backButton && tableElement) {
+                backButton.addEventListener('click', function(e) {
+                    const rowCount = table.rows().count();
+                    if (rowCount > 0) {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: 'Regresar al Dashboard',
+                            text: `Tiene ${rowCount} naviera(s) en la lista. ¿Está seguro de que desea regresar?`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#198754',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Sí, regresar',
+                            cancelButtonText: 'Quedarse aquí',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = backButton.href;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        // Función global para eliminar (mantener compatibilidad)
+        function confirmDelete(element) {
+            const navieraName = element.getAttribute('data-naviera-name');
+            
+            Swal.fire({
+                title: '¿Eliminar Naviera?',
+                text: `¿Está seguro de que desea eliminar la naviera "${navieraName}"? Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = element.href;
+                }
+            });
+            
+            return false;
+        }
+    </script>
+</body>
+</html>
