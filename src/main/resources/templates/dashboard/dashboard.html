@@ -9,83 +9,168 @@
 	rel="stylesheet">
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-[sec\:authorize="hasAuthority('ROLE_ADMIN')"] .card-header {
-	background: linear-gradient(90deg, #0d6efd, #198754);
-}
-
-[sec\:authorize="hasAuthority('ROLE_USER')"] .card-header {
-	background: linear-gradient(90deg, #0d6efd, #ffb703);
+:root {
+  --primary-blue: #0d6efd;
+  --success-green: #198754;
+  --warning-yellow: #ffb703;
+  --teal: #20c997;
+  --light-bg: #f0f4f9;
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
 }
 
 body {
 	background: linear-gradient(135deg, #f0f4f9, #d9e4f5);
 	font-family: "Poppins", sans-serif;
+	min-height: 100vh;
+}
+
+.user-info {
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(10px);
+	border-radius: 12px;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.page-title {
+	font-weight: 700;
+	color: #2c3e50;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	margin-bottom: 2rem;
+	position: relative;
+	display: inline-block;
+}
+
+.page-title::after {
+	content: '';
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 80px;
+	height: 4px;
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	border-radius: 2px;
+}
+
+[sec\:authorize="hasAuthority('ROLE_ADMIN')"] .card-header {
+	background: linear-gradient(90deg, var(--primary-blue), var(--success-green));
+}
+
+[sec\:authorize="hasAuthority('ROLE_USER')"] .card-header {
+	background: linear-gradient(90deg, var(--primary-blue), var(--warning-yellow));
 }
 
 .card {
-	border-radius: 1rem;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+	border-radius: 16px;
+	box-shadow: var(--card-shadow);
 	overflow: hidden;
-	transition: transform 0.3s;
+	transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	margin-bottom: 1.5rem;
 	height: 100%;
+	border: none;
+	background: white;
+	position: relative;
+}
+
+.card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 4px;
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.4s ease;
 }
 
 .card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+	transform: translateY(-8px);
+	box-shadow: var(--hover-shadow);
+}
+
+.card:hover::before {
+	transform: scaleX(1);
 }
 
 .card-header {
-	background: linear-gradient(90deg, #0d6efd, #20c997);
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
 	color: white;
 	font-weight: 600;
-	letter-spacing: 1px;
-	padding: 0.8rem 1rem;
-	font-size: 1rem;
+	letter-spacing: 0.5px;
+	padding: 1rem 1.2rem;
+	font-size: 1.05rem;
 	text-align: center;
+	border: none;
 }
 
 .card-body {
 	text-align: center;
-	padding: 1.5rem 0.5rem;
+	padding: 2rem 1rem;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	position: relative;
 }
 
 .card-body i {
-	font-size: 2rem;
-	color: #0d6efd;
-	margin-bottom: 0.5rem;
+	font-size: 2.8rem;
+	margin-bottom: 1rem;
+	background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	transition: all 0.3s ease;
+}
+
+.card:hover .card-body i {
+	transform: scale(1.1);
 }
 
 .counter {
-	font-size: 1.8rem;
+	font-size: 2.5rem;
 	font-weight: 700;
-	margin-top: 0.5rem;
+	margin: 0.8rem 0;
+	background: linear-gradient(135deg, #2c3e50, #4a6572);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	position: relative;
+}
+
+.counter::after {
+	content: '';
+	position: absolute;
+	bottom: -5px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 40px;
+	height: 3px;
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	border-radius: 2px;
+	opacity: 0.7;
 }
 
 .card-text {
-	font-size: 0.9rem;
-	color: #555;
+	font-size: 0.95rem;
+	color: #6c757d;
 	margin-bottom: 0;
+	font-weight: 500;
 }
 
 /* Layout de 4 columnas fijas */
 .dashboard-grid {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1.5rem;
-	justify-content: flex-start;
-}
-
-.col-dashboard {
-	flex: 0 0 calc(25% - 1.125rem); /* 25% menos el espacio del gap */
-	display: flex;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 1.8rem;
+	justify-content: center;
 }
 
 .dashboard-link {
@@ -93,70 +178,156 @@ body {
 	width: 100%;
 	text-decoration: none;
 	color: inherit;
+	transition: all 0.3s ease;
+}
+
+.dashboard-link:hover {
+	text-decoration: none;
+	color: inherit;
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
-	.col-dashboard {
-		flex: 0 0 calc(50% - 0.75rem); /* 2 columnas en tablets */
+	.dashboard-grid {
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 	}
 }
 
 @media (max-width: 768px) {
-	.col-dashboard {
-		flex: 0 0 100%; /* 1 columna en móviles */
+	.dashboard-grid {
+		grid-template-columns: 1fr;
+		gap: 1.2rem;
 	}
 	
-	.dashboard-grid {
-		gap: 1rem;
+	.card-body {
+		padding: 1.5rem 1rem;
+	}
+	
+	.counter {
+		font-size: 2rem;
 	}
 }
 
-.card {
-	border: 1px solid rgba(0, 0, 0, 0.05);
+.btn-logout {
+	background: linear-gradient(135deg, #dc3545, #c82333);
+	border: none;
+	border-radius: 8px;
+	padding: 0.5rem 1.2rem;
+	font-weight: 500;
+	box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+	transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+}
+
+.status-indicator {
+	position: absolute;
+	top: 15px;
+	right: 15px;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: #28a745;
+	box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+}
+
+.card:hover .status-indicator {
+	animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+	}
+	70% {
+		box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+	}
+}
+
+.empty-card .card-body i {
+	font-size: 2.2rem;
+	opacity: 0.7;
+}
+
+.empty-card .card-text {
+	font-size: 0.9rem;
+}
+
+.user-section {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 1rem;
+}
+
+.user-badge {
+	display: flex;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.8);
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.user-badge i {
+	color: var(--primary-blue);
+	margin-right: 0.5rem;
+}
+
+.user-name {
+	font-weight: 600;
+	color: #2c3e50;
 }
 </style>
 </head>
 <body>
 
-	<div class="alert alert-info text-center mt-3">
-		<strong>Usuario:</strong> <span sec:authentication="name"></span> | 
-		<strong>Rol:</strong> <span sec:authentication="principal.authorities"></span>
-	</div>
-
-	<h4 class="text-center mb-4">
-		<span sec:authorize="hasAuthority('ROLE_ADMIN')">Panel del Administrador 🧭</span> 
-		<span sec:authorize="hasAuthority('ROLE_USER')">Panel del Operador 👨‍💼</span>
-	</h4>
-
-	<div class="text-end m-3">
-		<form th:action="@{/logout}" method="post">
-			<button type="submit" class="btn btn-danger btn-sm">
-				<i class="fas fa-sign-out-alt"></i> Cerrar sesión
-			</button>
-		</form>
-	</div>
-
 	<div class="container my-4">
-		<div class="dashboard-grid"> <!-- Grid personalizado -->
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div></div> <!-- Espacio vacío para alinear a la derecha -->
+			
+			<div class="user-section">
+				<div class="user-badge">
+					<i class="fas fa-user-circle"></i>
+					<span class="user-name" sec:authentication="name">Usuario</span>
+				</div>
+				<form th:action="@{/logout}" method="post">
+					<button type="submit" class="btn btn-logout btn-sm">
+						<i class="fas fa-sign-out-alt me-1"></i> Cerrar sesión
+					</button>
+				</form>
+			</div>
+		</div>
 
-			<!-- Fila 1 -->
+		<h2 class="text-center page-title">
+			<span sec:authorize="hasAuthority('ROLE_ADMIN')">Panel del Administrador</span> 
+			<span sec:authorize="hasAuthority('ROLE_USER')">Panel del Operador</span>
+		</h2>
+
+		<div class="dashboard-grid">
 			<!-- Usuarios (solo ADMIN) -->
-			<div class="col-dashboard" sec:authorize="hasAuthority('ROLE_ADMIN')">
+			<div class="dashboard-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
 				<a th:href="@{/usuarios}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Registrar Usuarios</div>
 						<div class="card-body">
-							<i class="fas fa-user"></i>
+							<i class="fas fa-user-plus"></i>
 							<div class="counter" th:text="${totalUsuarios}">0</div>
 							<p class="card-text">Total de usuarios</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Modelos de Barco (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/modelos-barco}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Modelos de Barco</div>
@@ -164,13 +335,14 @@ body {
 							<i class="fas fa-ship"></i>
 							<div class="counter" th:text="${totalModelosBarco}">0</div>
 							<p class="card-text">Modelos registrados</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Navieras (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/navieras}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Navieras</div>
@@ -178,13 +350,14 @@ body {
 							<i class="fas fa-building"></i>
 							<div class="counter" th:text="${totalNavieras}">0</div>
 							<p class="card-text">Navieras registradas</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Barcos (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/barcos}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Barcos</div>
@@ -192,14 +365,14 @@ body {
 							<i class="fas fa-anchor"></i>
 							<div class="counter" th:text="${totalBarcos}">0</div>
 							<p class="card-text">Barcos registrados</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
-			<!-- Fila 2 -->
 			<!-- Ciudades (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/ciudades}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Ciudades</div>
@@ -207,13 +380,14 @@ body {
 							<i class="fas fa-city"></i>
 							<div class="counter" th:text="${totalCiudades}">0</div>
 							<p class="card-text">Ciudades registradas</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Puertos (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/puertos}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Puertos</div>
@@ -221,13 +395,14 @@ body {
 							<i class="fas fa-map-marker-alt"></i>
 							<div class="counter" th:text="${totalPuertos}">0</div>
 							<p class="card-text">Puertos registrados</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Programar Cruceros (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/cruceros}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Programar Cruceros</div>
@@ -235,13 +410,14 @@ body {
 							<i class="fas fa-calendar-alt"></i>
 							<div class="counter" th:text="${totalCruceros}">0</div>
 							<p class="card-text">Cruceros programados</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Pasajeros (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/pasajeros}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Pasajeros</div>
@@ -249,14 +425,14 @@ body {
 							<i class="fas fa-users"></i>
 							<div class="counter" th:text="${totalPasajeros}">0</div>
 							<p class="card-text">Pasajeros registrados</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
-			<!-- Fila 3 -->
 			<!-- Reservas (ADMIN y USER) -->
-			<div class="col-dashboard" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
 				<a th:href="@{/reservas}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Reservas</div>
@@ -264,32 +440,35 @@ body {
 							<i class="fas fa-ticket-alt"></i>
 							<div class="counter" th:text="${totalReservas}">0</div>
 							<p class="card-text">Reservas realizadas</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Reportes PDF (solo ADMIN) -->
-			<div class="col-dashboard" sec:authorize="hasAuthority('ROLE_ADMIN')">
-				<a th:href="@{/reportes/pdf}" class="dashboard-link">
+			<div class="dashboard-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
+				<a th:href="@{/reportes/excel}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Reportes PDF</div>
 						<div class="card-body">
 							<i class="fas fa-file-pdf"></i>
 							<p class="card-text">Generar reportes PDF</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
 			</div>
 
 			<!-- Exportar Excel (solo ADMIN) -->
-			<div class="col-dashboard" sec:authorize="hasAuthority('ROLE_ADMIN')">
+			<div class="dashboard-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
 				<a th:href="@{/reportes/excel}" class="dashboard-link">
 					<div class="card">
-						<div class="card-header">Excel</div>
+						<div class="card-header">Exportar a Excel</div>
 						<div class="card-body">
 							<i class="fas fa-file-excel"></i>
-							<p class="card-text">Exportar a Excel</p>
+							<p class="card-text">Exportar datos a Excel</p>
+							<div class="status-indicator"></div>
 						</div>
 					</div>
 				</a>
@@ -315,8 +494,10 @@ body {
 
 		    document.querySelectorAll(".counter").forEach(counter => {
 		        let target = parseInt(counter.textContent);
-		        counter.textContent = "0";
-		        animateCounter(counter, target);
+		        if (!isNaN(target) && target > 0) {
+		            counter.textContent = "0";
+		            animateCounter(counter, target);
+		        }
 		    });
 		});
 	</script>

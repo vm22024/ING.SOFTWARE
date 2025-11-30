@@ -197,6 +197,12 @@ body {
 <body>
     <div class="container my-5">
         <!-- Card Principal -->
+        <nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+					<li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Lista de Usuarios</li>
+				</ol>
+			</nav>
         <div class="card main-card">
             <!-- Header con título y controles -->
             <div class="card-header card-header-custom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
@@ -218,10 +224,6 @@ body {
                     <div class="btn-group-top">
                         <a th:href="@{/usuarios/nuevo}" class="btn btn-new btn-custom">
                             <i class="fas fa-plus me-2"></i>Nuevo Usuario
-                        </a>
-                        <!-- ✅ BOTÓN PARA REGRESAR AL MENÚ PRINCIPAL -->
-                        <a th:href="@{/dashboard}" class="btn btn-back btn-custom">
-                            <i class="fas fa-home me-2"></i>Menú Principal
                         </a>
                     </div>
                 </div>
