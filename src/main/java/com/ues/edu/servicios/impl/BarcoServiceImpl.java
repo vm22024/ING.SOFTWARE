@@ -28,7 +28,7 @@ public class BarcoServiceImpl implements IBarcoService {
     @Override
     public List<Barco> listar() {
         // Cambia esto para cargar las relaciones
-        return barcoRepo.WithRelations();
+        return barcoRepo.findAllWithRelations();
     }
 
     @Override
