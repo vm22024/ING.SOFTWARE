@@ -26,21 +26,21 @@ public interface ICruceroProgramadoRepo extends JpaRepository<CruceroProgramado,
 
 	@Query(value = """
 						SELECT
-			cp.id_crucero,
-			b.nombre as nombre_barco,
-			n.nombre as naviera,
-			po.nombre as puerto_origen,
-			pd.nombre as puerto_destino,
-			cp.fecha_salida,
-			cp.fecha_regreso,
-			cp.camarotes_disponibles,
-			cp.pasajeros_registrados,
-			mb.capacidad_pasajeros,
+			cp.id_crucero AS idCrucero,
+			b.nombre AS nombreBarco,
+			n.nombre AS naviera,
+			po.nombre AS puertoOrigen,
+			pd.nombre AS puertoDestino,
+			cp.fecha_salida AS fechaSalida,
+			cp.fecha_regreso AS fechaRegreso,
+			cp.camarotes_disponibles AS camarotesDisponibles,
+			cp.pasajeros_registrados AS pasajerosRegistrados,
+			mb.capacidad_pasajeros AS capacidadPasajeros,
 			CASE
 			WHEN mb.capacidad_pasajeros > 0
 			THEN ROUND((cp.pasajeros_registrados * 100.0 / mb.capacidad_pasajeros), 2)
 			ELSE 0
-			END as ocupacion_porcentaje
+			END as ocupacionPorcentaje
 			FROM crucero_programado cp
 			JOIN barco b ON cp.id_barco = b.id_barco
 			JOIN modelo_barco mb ON b.id_modelo = mb.id_modelo
