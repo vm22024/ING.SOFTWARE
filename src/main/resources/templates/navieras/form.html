@@ -321,7 +321,7 @@
                             <i class="fas fa-exclamation-triangle me-1"></i>
                             <span id="duplicateMessage">Ya existe una naviera con este nombre</span>
                         </div>
-                        <div class="form-text-custom">Ejemplo: Royal Caribbean, Carnival Cruise Line, MSC Cruceros</div>
+                        
                     </div>
 
                     <!-- Campo: País -->
@@ -431,10 +431,10 @@
                     return; // No validar si el nombre es muy corto
                 }
                 
-                // Mostrar estado de "verificando"
+                
                 nombreInput.classList.add('checking-duplicate');
                 
-                // Hacer debounce para no saturar el servidor
+                
                 duplicateCheckTimeout = setTimeout(() => {
                     verificarDuplicado(nombre);
                 }, 500);
@@ -446,7 +446,7 @@
                 
                 isCheckingDuplicate = true;
                 
-                // Simular verificación (en un caso real, harías una petición AJAX)
+               
                 setTimeout(() => {
                     const esDuplicado = verificarDuplicadoLocalmente(nombre);
                     
