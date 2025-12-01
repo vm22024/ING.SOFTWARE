@@ -17,13 +17,13 @@ public interface IBarcoRepo extends JpaRepository<Barco, Integer> {
 
 	@Query(value = """
 				 		SELECT
-			    b.id_barco,
-			    b.nombre as nombre_barco,
-			    b.anio_construccion,
+			    b.id_barco AS idBarco,
+			    b.nombre AS nombreBarco,
+			    b.anio_construccion AS anioConstruccion,
 			    n.nombre as naviera,
-			    mb.nombre as modelo,
-			    mb.capacidad_pasajeros,
-			    mb.total_camarotes
+			    mb.nombre AS modelo,
+			    mb.capacidad_pasajeros AS capacidadPasajeros,
+			    mb.total_camarotes AS totalCamarotes
 			FROM barco b
 			JOIN naviera n ON b.id_naviera = n.id_naviera
 			JOIN modelo_barco mb ON b.id_modelo = mb.id_modelo

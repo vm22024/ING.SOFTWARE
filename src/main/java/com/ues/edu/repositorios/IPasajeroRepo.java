@@ -40,13 +40,13 @@ public interface IPasajeroRepo extends JpaRepository<Pasajero, Integer>{
     
     @Query(value = """
     		SELECT 
-    id_pasajero,
-    nombre,
-    apellido,
-    email,
-    telefono
-FROM pasajero
-ORDER BY apellido, nombre
+    p.nombre || ' ' || p.apellido as pasajero,
+    COUNT(r.id_reserva) as totalViajes,
+    SUM(r.cantidad_personas) as totalPersonasAtendidas
+FROM pasajero p
+LEFT JOIN reserva r ON p.id_pasajero = r.id_pasajero
+GROUP BY p.id_pasajero, p.nombre, p.apellido
+ORDER BY total_viajes DESC
     		""", nativeQuery = true)
     
     List<IListaTotalPasajerosDTO> consultaTotalPasajeros();
