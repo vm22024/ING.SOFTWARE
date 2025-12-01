@@ -35,22 +35,39 @@ public class BarcoController {
 
 	// LISTAR SIN BÚSQUEDA
 	@GetMapping
-	public String listar(Model model) {
+	public String listar(Model model, 
+	                    @RequestParam(value = "ok", required = false) String ok,
+	                    @RequestParam(value = "error", required = false) String error) {
 		List<Barco> barcos = barcoService.listar();
 
 		model.addAttribute("titulo", "Barcos");
 		model.addAttribute("barcos", barcos);
+		
+		// Pasar parámetros a la vista para SweetAlert
+		if (ok != null) {
+			model.addAttribute("ok", ok);
+		}
+		if (error != null) {
+			model.addAttribute("error", error);
+		}
 
 		return "barcos/lista";
 	}
 
 	// FORM NUEVO
 	@GetMapping("/nuevo")
-	public String nuevo(Model model) {
+	public String nuevo(Model model,
+	                   @RequestParam(value = "error", required = false) String error) {
 		Barco barco = new Barco();
 		cargarCombos(model);
 		model.addAttribute("barco", barco);
 		model.addAttribute("modo", "nuevo");
+		
+		// Pasar parámetros a la vista para SweetAlert
+		if (error != null) {
+			model.addAttribute("error", error);
+		}
+		
 		return "barcos/form";
 	}
 
@@ -66,32 +83,41 @@ public class BarcoController {
 			return "barcos/form";
 		}
 
-		barco.setNaviera(navieraService.leerPorId(idNaviera));
-		barco.setModelo(modeloBarcoService.leerPorId(idModelo));
+		try {
+			barco.setNaviera(navieraService.leerPorId(idNaviera));
+			barco.setModelo(modeloBarcoService.leerPorId(idModelo));
 
-		barcoService.guardar(barco);
-		ra.addFlashAttribute("ok", "Barco registrado correctamente.");
-		return "redirect:/barcos";
+			barcoService.guardar(barco);
+			return "redirect:/barcos?ok=Barco registrado correctamente";
+		} catch (Exception e) {
+			return "redirect:/barcos/nuevo?error=Error al registrar el barco: " + e.getMessage();
+		}
 	}
 
-	// FORM EDITAR
-	@GetMapping("/{id}/editar")
-	public String editar(@PathVariable("id") Integer id, Model model, RedirectAttributes ra) {
+	// FORM EDITAR - CORREGIDO (sin /editar en el path)
+	@GetMapping("/editar/{id}")
+	public String editar(@PathVariable("id") Integer id, Model model,
+	                    @RequestParam(value = "error", required = false) String error) {
 		Barco barco = barcoService.leerPorId(id);
 
 		if (barco == null) {
-			ra.addFlashAttribute("error", "No se encontró el barco con ID: " + id);
-			return "redirect:/barcos";
+			return "redirect:/barcos?error=No se encontró el barco con ID: " + id;
 		}
 
 		cargarCombos(model);
 		model.addAttribute("barco", barco);
 		model.addAttribute("modo", "editar");
+		
+		// Pasar parámetros a la vista para SweetAlert
+		if (error != null) {
+			model.addAttribute("error", error);
+		}
+		
 		return "barcos/form";
 	}
 
-	// ACTUALIZAR
-	@PostMapping("/{id}/editar")
+	// ACTUALIZAR - CORREGIDO (sin /editar en el path)
+	@PostMapping("/editar/{id}")
 	public String actualizar(@PathVariable("id") Integer id, @Valid @ModelAttribute("barco") Barco barco,
 			BindingResult result, @RequestParam("naviera") Integer idNaviera, @RequestParam("modelo") Integer idModelo,
 			Model model, RedirectAttributes ra) {
@@ -102,24 +128,32 @@ public class BarcoController {
 			return "barcos/form";
 		}
 
-		barco.setIdBarco(id);
-		barco.setNaviera(navieraService.leerPorId(idNaviera));
-		barco.setModelo(modeloBarcoService.leerPorId(idModelo));
+		try {
+			barco.setIdBarco(id);
+			barco.setNaviera(navieraService.leerPorId(idNaviera));
+			barco.setModelo(modeloBarcoService.leerPorId(idModelo));
 
-		barcoService.guardar(barco);
-		ra.addFlashAttribute("ok", "Barco actualizado correctamente.");
-		return "redirect:/barcos";
+			barcoService.guardar(barco);
+			return "redirect:/barcos?ok=Barco actualizado correctamente";
+		} catch (Exception e) {
+			return "redirect:/barcos/editar/" + id + "?error=Error al actualizar el barco: " + e.getMessage();
+		}
 	}
 
-	// ELIMINAR
-	@PostMapping("/{id}/eliminar")
+	// ELIMINAR - MANTENER COMO POST PARA EVITAR PROBLEMAS
+	@PostMapping("/eliminar/{id}")
 	public String eliminar(@PathVariable("id") Integer id, RedirectAttributes ra) {
-		boolean eliminado = barcoService.eliminar(id);
-
-		ra.addFlashAttribute(eliminado ? "ok" : "error",
-				eliminado ? "Barco eliminado correctamente." : "No se pudo eliminar. Tiene dependencias.");
-
-		return "redirect:/barcos";
+		try {
+			boolean eliminado = barcoService.eliminar(id);
+			
+			if (eliminado) {
+				return "redirect:/barcos?ok=Barco eliminado correctamente";
+			} else {
+				return "redirect:/barcos?error=No se pudo eliminar el barco. Tiene dependencias";
+			}
+		} catch (Exception e) {
+			return "redirect:/barcos?error=Error al eliminar el barco: " + e.getMessage();
+		}
 	}
 
 	// CARGAR COMBOS

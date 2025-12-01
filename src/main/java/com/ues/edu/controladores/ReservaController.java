@@ -32,10 +32,21 @@ public class ReservaController {
     // LISTA
     // ==========================================================
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Model model,
+                        @RequestParam(value = "ok", required = false) String ok,
+                        @RequestParam(value = "error", required = false) String error) {
         List<Reserva> reservas = reservaService.listar();
         model.addAttribute("reservas", reservas);
         model.addAttribute("titulo", "Reservas");
+        
+        // Pasar parámetros a la vista para SweetAlert
+        if (ok != null) {
+            model.addAttribute("ok", ok);
+        }
+        if (error != null) {
+            model.addAttribute("error", error);
+        }
+        
         return "reservas/lista";
     }
 
@@ -43,11 +54,18 @@ public class ReservaController {
     // FORM NUEVO
     // ==========================================================
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
+    public String nuevo(Model model,
+                       @RequestParam(value = "error", required = false) String error) {
         Reserva reserva = new Reserva();
         cargarCombos(model);
         model.addAttribute("reserva", reserva);
         model.addAttribute("modo", "nuevo");
+        
+        // Pasar parámetros a la vista para SweetAlert
+        if (error != null) {
+            model.addAttribute("error", error);
+        }
+        
         return "reservas/form";
     }
 
@@ -66,29 +84,36 @@ public class ReservaController {
             return "reservas/form";
         }
 
-        reservaService.guardar(reserva);
-        ra.addFlashAttribute("ok", "Reserva registrada correctamente.");
-        return "redirect:/reservas";
+        try {
+            reservaService.guardar(reserva);
+            return "redirect:/reservas?ok=Reserva registrada correctamente";
+        } catch (Exception e) {
+            return "redirect:/reservas/nuevo?error=Error al registrar la reserva: " + e.getMessage();
+        }
     }
 
     // ==========================================================
     // FORM EDITAR
     // ==========================================================
-    @GetMapping("/{id}/editar")
+    @GetMapping("/editar/{id}")
     public String editar(@PathVariable("id") Integer id,
                          Model model,
-                         RedirectAttributes ra) {
+                         @RequestParam(value = "error", required = false) String error) {
 
         Reserva reserva = reservaService.leerPorId(id);
 
         if (reserva == null) {
-            ra.addFlashAttribute("error", "No se encontró la reserva con ID: " + id);
-            return "redirect:/reservas";
+            return "redirect:/reservas?error=No se encontró la reserva con ID: " + id;
         }
 
         cargarCombos(model);
         model.addAttribute("reserva", reserva);
         model.addAttribute("modo", "editar");
+        
+        // Pasar parámetros a la vista para SweetAlert
+        if (error != null) {
+            model.addAttribute("error", error);
+        }
 
         return "reservas/form";
     }
@@ -96,7 +121,7 @@ public class ReservaController {
     // ==========================================================
     // ACTUALIZAR
     // ==========================================================
-    @PostMapping("/{id}/editar")
+    @PostMapping("/editar/{id}")
     public String actualizar(@PathVariable("id") Integer id,
                              @Valid @ModelAttribute("reserva") Reserva reserva,
                              BindingResult result,
@@ -109,27 +134,33 @@ public class ReservaController {
             return "reservas/form";
         }
 
-        reserva.setIdReserva(id);
-        reservaService.guardar(reserva);
-
-        ra.addFlashAttribute("ok", "Reserva actualizada correctamente.");
-        return "redirect:/reservas";
+        try {
+            reserva.setIdReserva(id);
+            reservaService.guardar(reserva);
+            return "redirect:/reservas?ok=Reserva actualizada correctamente";
+        } catch (Exception e) {
+            return "redirect:/reservas/editar/" + id + "?error=Error al actualizar la reserva: " + e.getMessage();
+        }
     }
 
     // ==========================================================
     // ELIMINAR
     // ==========================================================
-    @PostMapping("/{id}/eliminar")
+    @PostMapping("/eliminar/{id}")
     public String eliminar(@PathVariable("id") Integer id,
                            RedirectAttributes ra) {
 
-        boolean eliminado = reservaService.eliminar(id);
+        try {
+            boolean eliminado = reservaService.eliminar(id);
 
-        ra.addFlashAttribute(eliminado ? "ok" : "error",
-                eliminado ? "Reserva eliminada correctamente."
-                          : "No se pudo eliminar la reserva. Puede tener dependencias.");
-
-        return "redirect:/reservas";
+            if (eliminado) {
+                return "redirect:/reservas?ok=Reserva eliminada correctamente";
+            } else {
+                return "redirect:/reservas?error=No se pudo eliminar la reserva. Puede tener dependencias";
+            }
+        } catch (Exception e) {
+            return "redirect:/reservas?error=Error al eliminar la reserva: " + e.getMessage();
+        }
     }
 
     // ==========================================================
