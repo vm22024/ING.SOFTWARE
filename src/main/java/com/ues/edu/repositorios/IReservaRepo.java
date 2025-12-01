@@ -14,15 +14,15 @@ public interface IReservaRepo extends JpaRepository<Reserva, Integer> {
 
 	@Query(value = """
 						SELECT
-			    r.id_reserva,
+			    r.id_reserva AS idReserva,
 			    p.nombre || ' ' || p.apellido as pasajero,
-			    p.email,
-			    p.telefono,
-			    cp.id_crucero,
-			    b.nombre as barco,
-			    r.fecha_reserva,
-			    r.cantidad_personas,
-			    r.cantidad_camarotes
+			    p.email AS email,
+			    p.telefono AS telefono,
+			    cp.id_crucero AS idCrucero,
+			    b.nombre AS barco,
+			    r.fecha_reserva AS fechaReserva,
+			    r.cantidad_personas AS cantidadPersonas,
+			    r.cantidad_camarotes AS cantidadCamarotes
 			FROM reserva r
 			JOIN pasajero p ON r.id_pasajero = p.id_pasajero
 			JOIN crucero_programado cp ON r.id_crucero = cp.id_crucero
