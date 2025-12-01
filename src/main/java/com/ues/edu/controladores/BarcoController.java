@@ -128,5 +128,3 @@ public class BarcoController {
 		model.addAttribute("modelos", modeloBarcoService.listar());
 	}
 }
-
-//MANUEL GAY
