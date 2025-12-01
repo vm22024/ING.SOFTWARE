@@ -492,6 +492,19 @@
         
         let formChanged = false;
 
+        // 🔽🔽🔽 NUEVO: Establecer fecha mínima para fecha de salida
+        const hoy = new Date();
+        const manana = new Date(hoy);
+        manana.setDate(manana.getDate() + 1);
+        
+        // Formatear fechas para input type="date" (YYYY-MM-DD)
+        const fechaMinima = manana.toISOString().split('T')[0];
+        const fechaHoy = hoy.toISOString().split('T')[0];
+        
+        // Establecer fecha mínima en el input
+        fechaSalidaInput.setAttribute('min', fechaMinima);
+        fechaRegresoInput.setAttribute('min', fechaMinima);
+
         // Detectar cambios en el formulario
         const formFields = form.querySelectorAll('input, select, textarea');
         formFields.forEach(field => {
@@ -500,26 +513,63 @@
             });
         });
 
-        // Validar que las fechas sean coherentes
+        // 🔽🔽🔽 ACTUALIZADO: Validar que las fechas sean coherentes
         fechaSalidaInput.addEventListener('change', validarFechas);
         fechaRegresoInput.addEventListener('change', validarFechas);
 
         function validarFechas() {
             const fechaSalida = new Date(fechaSalidaInput.value);
             const fechaRegreso = new Date(fechaRegresoInput.value);
+            const hoyDate = new Date(fechaHoy);
             
-            if (fechaSalida && fechaRegreso && fechaRegreso <= fechaSalida) {
-                fechaRegresoInput.classList.add('is-invalid');
-                let feedback = fechaRegresoInput.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    fechaRegresoInput.parentNode.insertBefore(feedback, fechaRegresoInput.nextSibling);
-                }
-                feedback.textContent = 'La fecha de regreso debe ser posterior a la fecha de salida';
-            } else {
-                fechaRegresoInput.classList.remove('is-invalid');
+            // Remover validaciones anteriores
+            fechaSalidaInput.classList.remove('is-invalid');
+            fechaRegresoInput.classList.remove('is-invalid');
+            
+            // Limpiar mensajes de error anteriores
+            limpiarMensajesError(fechaSalidaInput);
+            limpiarMensajesError(fechaRegresoInput);
+            
+            let hayError = false;
+            
+            // Validación 1: Fecha de salida no puede ser hoy o anterior
+            if (fechaSalida && fechaSalida <= hoyDate) {
+                agregarMensajeError(fechaSalidaInput, 'La fecha de salida debe ser a partir de mañana para permitir reservaciones');
+                fechaSalidaInput.classList.add('is-invalid');
+                hayError = true;
             }
+            
+            // Validación 2: Fecha de regreso debe ser posterior a fecha de salida
+            if (fechaSalida && fechaRegreso && fechaRegreso <= fechaSalida) {
+                agregarMensajeError(fechaRegresoInput, 'La fecha de regreso debe ser posterior a la fecha de salida');
+                fechaRegresoInput.classList.add('is-invalid');
+                hayError = true;
+            }
+            
+            // Validación 3: Fecha de regreso no puede ser hoy o anterior
+            if (fechaRegreso && fechaRegreso <= hoyDate) {
+                agregarMensajeError(fechaRegresoInput, 'La fecha de regreso debe ser a partir de mañana');
+                fechaRegresoInput.classList.add('is-invalid');
+                hayError = true;
+            }
+            
+            return !hayError;
+        }
+
+        // 🔽🔽🔽 NUEVAS FUNCIONES AUXILIARES PARA MENSAJES DE ERROR
+        function limpiarMensajesError(input) {
+            const feedback = input.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.remove();
+            }
+        }
+
+        function agregarMensajeError(input, mensaje) {
+            limpiarMensajesError(input);
+            const feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            feedback.textContent = mensaje;
+            input.parentNode.insertBefore(feedback, input.nextSibling);
         }
 
         // Validar que puertos origen y destino sean diferentes
@@ -530,17 +580,15 @@
             const puertoOrigen = puertoOrigenSelect.value;
             const puertoDestino = puertoDestinoSelect.value;
             
+            limpiarMensajesError(puertoDestinoSelect);
+            
             if (puertoOrigen && puertoDestino && puertoOrigen === puertoDestino) {
                 puertoDestinoSelect.classList.add('is-invalid');
-                let feedback = puertoDestinoSelect.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    puertoDestinoSelect.parentNode.insertBefore(feedback, puertoDestinoSelect.nextSibling);
-                }
-                feedback.textContent = 'El puerto de destino debe ser diferente al puerto de origen';
+                agregarMensajeError(puertoDestinoSelect, 'El puerto de destino debe ser diferente al puerto de origen');
+                return false;
             } else {
                 puertoDestinoSelect.classList.remove('is-invalid');
+                return true;
             }
         }
 
@@ -574,10 +622,7 @@
             const infoCalculo = document.getElementById('infoCalculo');
             
             if (barcoId) {
-                // Obtener el texto de la opción seleccionada
                 const textoOpcion = barcoSelect.options[barcoSelect.selectedIndex].text;
-                
-                // Buscar el número de capacidad en el texto (ej: "Cap: 500 pasajeros")
                 const match = textoOpcion.match(/Cap:\s*(\d+)\s*pasajeros/);
                 
                 if (match && match[1]) {
@@ -590,7 +635,6 @@
                         infoCalculo.textContent = `${camarotes} camarotes × 2 = ${capacidadNum} pasajeros`;
                     }
                 } else {
-                    // Si no encuentra el patrón, usar valores por defecto
                     capacidadPasajeros.textContent = '500';
                     capacidadCamarotes.textContent = '250';
                     if (infoCalculo) {
@@ -614,7 +658,7 @@
             actualizarInformacionCapacidad();
         }
 
-        // Confirmación al enviar el formulario
+        // 🔽🔽🔽 ACTUALIZADO: Confirmación al enviar el formulario
         form.addEventListener('submit', function(e) {
             // Validar campos requeridos
             let isValid = true;
@@ -625,17 +669,27 @@
                 }
             });
 
-            // Validar fechas
-            validarFechas();
-            validarPuertos();
+            // Validar fechas (incluye validaciones nuevas)
+            const fechasValidas = validarFechas();
+            
+            // Validar puertos
+            const puertosValidos = validarPuertos();
 
-            if (!isValid || fechaRegresoInput.classList.contains('is-invalid') || 
-                puertoDestinoSelect.classList.contains('is-invalid')) {
+            if (!isValid || !fechasValidas || !puertosValidos) {
                 e.preventDefault();
                 Swal.fire({
                     icon: 'error',
                     title: 'Datos inválidos',
-                    text: 'Por favor, corrija los errores en el formulario antes de enviar.',
+                    html: `
+                        <div class="text-start">
+                            <p>Por favor, corrija los siguientes errores:</p>
+                            <ul>
+                                ${!isValid ? '<li>Todos los campos son obligatorios</li>' : ''}
+                                ${!fechasValidas ? '<li>Las fechas no son válidas (mínimo mañana para salida)</li>' : ''}
+                                ${!puertosValidos ? '<li>Los puertos deben ser diferentes</li>' : ''}
+                            </ul>
+                        </div>
+                    `,
                     confirmButtonColor: '#0d6efd'
                 });
                 return;
@@ -647,6 +701,10 @@
             const barcoText = barcoSelect.options[barcoSelect.selectedIndex].text;
             const origenText = puertoOrigenSelect.options[puertoOrigenSelect.selectedIndex].text;
             const destinoText = puertoDestinoSelect.options[puertoDestinoSelect.selectedIndex].text;
+            
+            // Mostrar información adicional sobre fechas
+            const fechaSalida = new Date(fechaSalidaInput.value);
+            const diasRestantes = Math.ceil((fechaSalida - new Date(fechaHoy)) / (1000 * 60 * 60 * 24));
 
             Swal.fire({
                 title: `¿Confirmar ${actionText}?`,
@@ -657,7 +715,12 @@
                             <strong>Barco:</strong> ${barcoText}<br>
                             <strong>Ruta:</strong> ${origenText} → ${destinoText}<br>
                             <strong>Salida:</strong> ${fechaSalidaInput.value}<br>
-                            <strong>Regreso:</strong> ${fechaRegresoInput.value}
+                            <strong>Regreso:</strong> ${fechaRegresoInput.value}<br>
+                            <strong class="text-primary">Días para salida:</strong> ${diasRestantes} días
+                        </div>
+                        <div class="mt-3 alert alert-warning small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            El crucero comenzará en ${diasRestantes} días. Los clientes pueden reservar hasta el día anterior al inicio.
                         </div>
                     </div>
                 `,
@@ -712,7 +775,35 @@
                 e.returnValue = 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
             }
         });
+
+        // 🔽🔽🔽 NUEVO: Mostrar mensaje informativo sobre fechas
+        mostrarInfoFechas();
+
+        function mostrarInfoFechas() {
+            const infoFechas = document.createElement('div');
+            infoFechas.className = 'alert alert-info alert-custom mt-3';
+            infoFechas.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar-check me-3 fs-5"></i>
+                    <div>
+                        <strong>Requisitos de fechas:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>La fecha de salida debe ser a partir de mañana (${fechaMinima})</li>
+                            <li>Se necesita al menos 1 día para que los clientes puedan reservar</li>
+                            <li>La fecha de regreso debe ser posterior a la fecha de salida</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            // Insertar después del campo de fecha de regreso
+            const fechaRegresoContainer = fechaRegresoInput.closest('.col-md-3');
+            if (fechaRegresoContainer) {
+                fechaRegresoContainer.parentNode.insertBefore(infoFechas, fechaRegresoContainer.nextSibling);
+            }
+        }
     });
 </script>
+
 </body>
 </html>
