@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8">
+<title>CRUISEMANAGER - Exportar Excel</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary-blue: #0d6efd;
+  --success-green: #198754;
+  --warning-yellow: #ffb703;
+  --teal: #20c997;
+  --light-bg: #f0f4f9;
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+body {
+	background: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+	font-family: "Poppins", sans-serif;
+	min-height: 100vh;
+}
+
+.user-info {
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(10px);
+	border-radius: 12px;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.page-title {
+	font-weight: 700;
+	color: #2c3e50;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	margin-bottom: 2rem;
+	position: relative;
+	display: inline-block;
+}
+
+.page-title::after {
+	content: '';
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 80px;
+	height: 4px;
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	border-radius: 2px;
+}
+
+[sec\:authorize="hasAuthority('ROLE_ADMIN')"] .card-header {
+	background: linear-gradient(90deg, var(--primary-blue), var(--success-green));
+}
+
+[sec\:authorize="hasAuthority('ROLE_USER')"] .card-header {
+	background: linear-gradient(90deg, var(--primary-blue), var(--warning-yellow));
+}
+
+.card {
+	border-radius: 16px;
+	box-shadow: var(--card-shadow);
+	overflow: hidden;
+	transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	margin-bottom: 1.5rem;
+	height: 100%;
+	border: none;
+	background: white;
+	position: relative;
+}
+
+.card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 4px;
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.4s ease;
+}
+
+.card:hover {
+	transform: translateY(-8px);
+	box-shadow: var(--hover-shadow);
+}
+
+.card:hover::before {
+	transform: scaleX(1);
+}
+
+.card-header {
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	color: white;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	padding: 1rem 1.2rem;
+	font-size: 1.05rem;
+	text-align: center;
+	border: none;
+}
+
+.card-body {
+	text-align: center;
+	padding: 2rem 1rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+
+.card-body i {
+	font-size: 2.8rem;
+	margin-bottom: 1rem;
+	background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	transition: all 0.3s ease;
+}
+
+.card:hover .card-body i {
+	transform: scale(1.1);
+}
+
+.counter {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin: 0.8rem 0;
+	background: linear-gradient(135deg, #2c3e50, #4a6572);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	position: relative;
+}
+
+.counter::after {
+	content: '';
+	position: absolute;
+	bottom: -5px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 40px;
+	height: 3px;
+	background: linear-gradient(90deg, var(--primary-blue), var(--teal));
+	border-radius: 2px;
+	opacity: 0.7;
+}
+
+.card-text {
+	font-size: 0.95rem;
+	color: #6c757d;
+	margin-bottom: 0;
+	font-weight: 500;
+}
+
+/* Layout de 4 columnas fijas */
+.dashboard-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 1.8rem;
+	justify-content: center;
+}
+
+.dashboard-link {
+	display: block;
+	width: 100%;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.3s ease;
+}
+
+.dashboard-link:hover {
+	text-decoration: none;
+	color: inherit;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+	.dashboard-grid {
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	}
+}
+
+@media (max-width: 768px) {
+	.dashboard-grid {
+		grid-template-columns: 1fr;
+		gap: 1.2rem;
+	}
+	
+	.card-body {
+		padding: 1.5rem 1rem;
+	}
+	
+	.counter {
+		font-size: 2rem;
+	}
+}
+
+.btn-logout {
+	background: linear-gradient(135deg, #dc3545, #c82333);
+	border: none;
+	border-radius: 8px;
+	padding: 0.5rem 1.2rem;
+	font-weight: 500;
+	box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+	transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+}
+
+.btn-back {
+	background: linear-gradient(135deg, #6c757d, #5a6268);
+	border: none;
+	border-radius: 8px;
+	padding: 0.5rem 1.2rem;
+	font-weight: 500;
+	box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
+	transition: all 0.3s ease;
+	color: white;
+}
+
+.btn-back:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4);
+	color: white;
+}
+
+.status-indicator {
+	position: absolute;
+	top: 15px;
+	right: 15px;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: #28a745;
+	box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+}
+
+.card:hover .status-indicator {
+	animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+	}
+	70% {
+		box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+	}
+}
+
+.empty-card .card-body i {
+	font-size: 2.2rem;
+	opacity: 0.7;
+}
+
+.empty-card .card-text {
+	font-size: 0.9rem;
+}
+
+.user-section {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 1rem;
+}
+
+.user-badge {
+	display: flex;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.8);
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.user-badge i {
+	color: var(--primary-blue);
+	margin-right: 0.5rem;
+}
+
+.user-name {
+	font-weight: 600;
+	color: #2c3e50;
+}
+
+.navigation-section {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.excel-card .card-header {
+	background: linear-gradient(90deg, #198754, #20c997);
+}
+
+.excel-card .card-body i {
+	background: linear-gradient(135deg, #198754, #20c997);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.breadcrumb {
+	background: rgba(255, 255, 255, 0.8);
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb-item a {
+	text-decoration: none;
+	color: var(--primary-blue);
+	font-weight: 500;
+}
+
+.breadcrumb-item.active {
+	color: #6c757d;
+	font-weight: 500;
+}
+</style>
+</head>
+<body>
+
+	<div class="container my-4">
+		<!-- Navegación -->
+		<div class="navigation-section">
+			<nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+					<li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Exportar Excel</li>
+				</ol>
+			</nav>
+			
+			<div class="user-section">
+				<div class="user-badge">
+					<i class="fas fa-user-circle"></i>
+					<span class="user-name" sec:authentication="name">Usuario</span>
+				</div>
+				<form th:action="@{/logout}" method="post">
+					<button type="submit" class="btn btn-logout btn-sm">
+						<i class="fas fa-sign-out-alt me-1"></i> Cerrar sesión
+					</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- Título de la página -->
+		<h2 class="text-center page-title">
+			<i class="fas fa-file-excel me-2"></i>Exportar Datos a Excel
+		</h2>
+		<p class="text-center text-muted mb-5">Selecciona el tipo de datos que deseas exportar</p>
+
+		<!-- Grid de tarjetas para exportación -->
+		<div class="dashboard-grid">
+			<!-- Exportar Usuarios -->
+			
+
+			<!-- Exportar Cruceros -->
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+				<a th:href="@{/reportes/excel/cruceroProgramado}" class="dashboard-link">
+					<div class="card excel-card">
+						<div class="card-header">Cruceros Programados</div>
+						<div class="card-body">
+							<i class="fas fa-ship"></i>
+							<div class="counter" th:text="${totalCruceros}">0</div>
+							<p class="card-text">Programación de cruceros</p>
+							<div class="status-indicator"></div>
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<!-- Exportar Reservas -->
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_USER')">
+				<a th:href="@{/reportes/excel/reservas}" class="dashboard-link">
+					<div class="card excel-card">
+						<div class="card-header">Reservas por Crucero</div>
+						<div class="card-body">
+							<i class="fas fa-ticket-alt"></i>
+							<div class="counter" th:text="${totalReservas}">0</div>
+							<p class="card-text">Historial completo de reservas</p>
+							<div class="status-indicator"></div>
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<!-- Exportar Pasajeros -->
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+				<a th:href="@{/reportes/excel/pasajeros}" class="dashboard-link">
+					<div class="card excel-card">
+						<div class="card-header">Total Viajes por Pasajero</div>
+						<div class="card-body">
+							<i class="fas fa-user-friends"></i>
+							<div class="counter" th:text="${totalPasajeros}">0</div>
+							<p class="card-text">Base de datos de pasajeros</p>
+							<div class="status-indicator"></div>
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<!-- Exportar Barcos -->
+			<div class="dashboard-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+				<a th:href="@{/reportes/excel/barcos}" class="dashboard-link">
+					<div class="card excel-card">
+						<div class="card-header">Inventario de Barcos</div>
+						<div class="card-body">
+							<i class="fas fa-anchor"></i>
+							<div class="counter" th:text="${totalBarcos}">0</div>
+							<p class="card-text">Información de la flota</p>
+							<div class="status-indicator"></div>
+						</div>
+					</div>
+				</a>
+			</div>
+			</div>
+
+				
+		<div class="row mt-5">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-header bg-light">
+						<h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información de Exportación</h5>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-md-12">
+								<h6><i class="fas fa-clock me-2 text-primary"></i>Tiempo de Exportación</h6>
+								<p class="text-muted">La exportación puede tomar de 1 a 5 minutos dependiendo de la cantidad de datos.</p>
+							</div>
+							<div class="col-md-12">
+								<h6><i class="fas fa-file-excel me-2 text-success"></i>Formato de Archivo</h6>
+								<p class="text-muted">Todos los archivos se generan en formato .xlsx compatible con Excel 2010+.</p>
+							</div>
+						</div>
+						<div class="row mt-3">
+							<div class="col-md-12">
+								<h6><i class="fas fa-download me-2 text-info"></i>Descarga Automática</h6>
+								<p class="text-muted">El archivo se descargará automáticamente cuando esté listo.</p>
+							</div>
+							<div class="col-md-12">
+								<h6><i class="fas fa-shield-alt me-2 text-warning"></i>Seguridad</h6>
+								<p class="text-muted">Solo usuarios autorizados pueden exportar datos sensibles.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+		    function animateCounter(element, target) {
+		        let count = 0;
+		        let increment = target / 100;
+		        let interval = setInterval(() => {
+		            count += increment;
+		            if (count >= target) {
+		                count = target;
+		                clearInterval(interval);
+		            }
+		            element.textContent = Math.floor(count);
+		        }, 15);
+		    }
+
+		    document.querySelectorAll(".counter").forEach(counter => {
+		        let target = parseInt(counter.textContent);
+		        if (!isNaN(target) && target > 0) {
+		            counter.textContent = "0";
+		            animateCounter(counter, target);
+		        }
+		    });
+		});
+	</script>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

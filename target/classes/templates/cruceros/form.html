@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${crucero.idCrucero} != null ? 'Editar Crucero - CRUISEMANAGER' : 'Programar Crucero - CRUISEMANAGER'">Formulario Crucero</title>
+
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Variables de colores */
+        :root {
+            --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
+            --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            --hover-transition: all 0.3s ease-in-out;
+            --success-gradient: linear-gradient(45deg, #198754, #20c997);
+            --danger-color: #dc3545;
+            --cruise-gradient: linear-gradient(45deg, #0d6efd, #17a2b8);
+        }
+
+        /* Estilos generales */
+        body {
+            background: var(--background-gradient);
+            font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Card principal */
+        .main-card {
+            border-radius: 1.2rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-top: 2rem;
+            border: none;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-header-custom {
+            background: var(--cruise-gradient);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Botones */
+        .btn-custom {
+            border-radius: 2rem;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: var(--hover-transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-success-custom {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-secondary-custom {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+        }
+
+        /* Formularios */
+        .form-container {
+            padding: 2rem;
+        }
+
+        .form-label-custom {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-control-custom, .form-select-custom {
+            border-radius: 1rem;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: var(--hover-transition);
+            font-size: 1rem;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .form-control-custom.is-invalid, .form-select-custom.is-invalid {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        /* Alertas */
+        .alert-custom {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-custom .btn-close {
+            padding: 0.75rem;
+        }
+
+        /* Iconos */
+        .form-icon {
+            color: #0d6efd;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Grupo de botones */
+        .btn-group-custom {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f8f9fa;
+        }
+
+        /* Badge para ID */
+        .id-badge {
+            background: linear-gradient(45deg, #6c757d, #adb5bd);
+            color: white;
+            border-radius: 1rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 1.5rem;
+            }
+            .btn-group-custom {
+                flex-direction: column;
+            }
+            .btn-group-custom .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .card-header-custom {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            .id-badge {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Estados de validación */
+        .invalid-feedback {
+            display: block;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-text-custom {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Loading state */
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+        }
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- Card Principal -->
+        <ol class="breadcrumb">
+					<li class="breadcrumb-item"><a th:href="@{/cruceros}"><i class="fas fa-home me-1"></i>Lista de Cruceros</a></li>
+					<li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Cruceros</li>
+				</ol>
+        <div class="card main-card fade-in">
+            <!-- Header -->
+            <div class="card-header card-header-custom">
+                <div class="d-flex align-items-center flex-wrap">
+                    <i class="fas" th:classappend="${crucero.idCrucero} != null ? 'fa-edit' : 'fa-ship'"></i>
+                    <span th:text="${crucero.idCrucero} != null ? 'Editar Crucero Programado' : 'Programar Nuevo Crucero'"></span>
+                    <span th:if="${crucero.idCrucero} != null" class="id-badge">
+                        ID: <span th:text="${crucero.idCrucero}"></span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Body del Formulario -->
+            <div class="form-container">
+                <!-- Alertas de notificación -->
+                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${ok}">Operación realizada con éxito</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}">Ocurrió un error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+
+                <!-- Formulario -->
+                <form th:action="${crucero.idCrucero} != null ? @{/cruceros/actualizar/{id}(id=${crucero.idCrucero})} : @{/cruceros}"
+                      th:object="${crucero}" method="post" class="row g-4" novalidate id="cruceroForm">
+
+                    <input type="hidden" th:field="*{idCrucero}" id="cruceroId" />
+
+                    <!-- Errores globales -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="col-12">
+                        <div class="alert alert-danger alert-custom" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Errores encontrados:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Fila 1: Barco y Fechas -->
+                    <div class="col-md-6">
+                        <label for="barco" class="form-label-custom">
+                            <i class="fas fa-ship form-icon"></i>
+                            Barco
+                        </label>
+                        <select th:field="*{barco.idBarco}"
+                                class="form-select form-select-custom"
+                                th:classappend="${#fields.hasErrors('barco.idBarco')} ? ' is-invalid'"
+                                required id="barco">
+                            <option value="">Seleccione un barco</option>
+                            <option th:each="barco : ${barcos}"
+        th:value="${barco.idBarco}"
+        th:text="${barco.nombre + ' (' + barco.modelo.nombre + ')'}">
+</option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('barco.idBarco')}" 
+                             th:errors="*{barco.idBarco}"></div>
+                        <div class="form-text-custom" th:if="${not #lists.isEmpty(barcos)}">
+                            <span th:text="${#lists.size(barcos)}"></span> barcos disponibles
+                        </div>
+                        <div class="form-text-custom text-warning" th:if="${#lists.isEmpty(barcos)}">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            No hay barcos registrados.
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="fechaSalida" class="form-label-custom">
+                            <i class="fas fa-calendar-alt form-icon"></i>
+                            Fecha de Salida
+                        </label>
+                        <input type="date" th:field="*{fechaSalida}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('fechaSalida')} ? ' is-invalid'"
+                               required id="fechaSalida" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaSalida')}" 
+                             th:errors="*{fechaSalida}"></div>
+                        <div class="form-text-custom">Fecha en que zarpa el crucero</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="fechaRegreso" class="form-label-custom">
+                            <i class="fas fa-calendar-check form-icon"></i>
+                            Fecha de Regreso
+                        </label>
+                        <input type="date" th:field="*{fechaRegreso}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('fechaRegreso')} ? ' is-invalid'"
+                               required id="fechaRegreso" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaRegreso')}" 
+                             th:errors="*{fechaRegreso}"></div>
+                        <div class="form-text-custom">Fecha en que regresa el crucero</div>
+                    </div>
+
+                    <!-- Fila 2: Puertos de Origen y Destino -->
+                    <div class="col-md-6">
+                        <label for="puertoOrigen" class="form-label-custom">
+                            <i class="fas fa-map-marker-alt form-icon"></i>
+                            Puerto de Origen
+                        </label>
+                        <select th:field="*{puertoOrigen.idPuerto}"
+                                class="form-select form-select-custom"
+                                th:classappend="${#fields.hasErrors('puertoOrigen.idPuerto')} ? ' is-invalid'"
+                                required id="puertoOrigen">
+                            <option value="">Seleccione puerto de origen</option>
+                            <option th:each="puerto : ${puertos}"
+                                    th:value="${puerto.idPuerto}"
+                                    th:text="${puerto.nombre + ' - ' + puerto.ciudad.nombre}"
+                                    th:selected="${crucero.puertoOrigen != null and crucero.puertoOrigen.idPuerto == puerto.idPuerto}">
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('puertoOrigen.idPuerto')}" 
+                             th:errors="*{puertoOrigen.idPuerto}"></div>
+                        <div class="form-text-custom">Puerto desde donde zarpa el crucero</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="puertoDestino" class="form-label-custom">
+                            <i class="fas fa-flag-checkered form-icon"></i>
+                            Puerto de Destino
+                        </label>
+                        <select th:field="*{puertoDestino.idPuerto}"
+                                class="form-select form-select-custom"
+                                th:classappend="${#fields.hasErrors('puertoDestino.idPuerto')} ? ' is-invalid'"
+                                required id="puertoDestino">
+                            <option value="">Seleccione puerto de destino</option>
+                            <option th:each="puerto : ${puertos}"
+                                    th:value="${puerto.idPuerto}"
+                                    th:text="${puerto.nombre + ' - ' + puerto.ciudad.nombre}"
+                                    th:selected="${crucero.puertoDestino != null and crucero.puertoDestino.idPuerto == puerto.idPuerto}">
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('puertoDestino.idPuerto')}" 
+                             th:errors="*{puertoDestino.idPuerto}"></div>
+                        <div class="form-text-custom">Puerto al que llega el crucero</div>
+                    </div>
+
+                    <!-- Fila 3: Capacidad -->
+                    <div class="col-md-6">
+                        <label for="pasajerosRegistrados" class="form-label-custom">
+                            <i class="fas fa-users form-icon"></i>
+                            Pasajeros Registrados
+                        </label>
+                        <input type="number" th:field="*{pasajerosRegistrados}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('pasajerosRegistrados')} ? ' is-invalid'"
+                               min="0" max="10000" id="pasajerosRegistrados" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('pasajerosRegistrados')}" 
+                             th:errors="*{pasajerosRegistrados}"></div>
+                        <div class="form-text-custom">Número de pasajeros ya registrados (opcional)</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="camarotesDisponibles" class="form-label-custom">
+                            <i class="fas fa-bed form-icon"></i>
+                            Camarotes Disponibles
+                        </label>
+                        <input type="number" th:field="*{camarotesDisponibles}" 
+                               class="form-control form-control-custom"
+                               th:classappend="${#fields.hasErrors('camarotesDisponibles')} ? ' is-invalid'"
+                               min="0" max="5000" id="camarotesDisponibles" />
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('camarotesDisponibles')}" 
+                             th:errors="*{camarotesDisponibles}"></div>
+                        <div class="form-text-custom">Número de camarotes disponibles (opcional)</div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="col-12">
+                        <div class="alert alert-info alert-custom">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3 fs-5"></i>
+                                <div>
+                                    <strong>Información importante:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>El puerto de origen y destino deben ser diferentes</li>
+                                        <li>La fecha de regreso debe ser posterior a la fecha de salida</li>
+                                        <li>Los campos de pasajeros y camarotes son opcionales</li>
+                                        <li>Un barco no puede tener dos cruceros programados en las mismas fechas</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="col-12">
+                        <div class="btn-group-custom">
+                            <button type="submit" class="btn btn-success-custom btn-custom" id="submitBtn">
+                                <i class="fas" th:classappend="${crucero.idCrucero} != null ? 'fa-save' : 'fa-ship'"></i>
+                                <span th:text="${crucero.idCrucero} != null ? 'Guardar Cambios' : 'Programar Crucero'"></span>
+                            </button>
+                            <a th:href="@{/cruceros}" class="btn btn-secondary-custom btn-custom" id="cancelBtn">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('cruceroForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const barcoSelect = document.getElementById('barco');
+            const puertoOrigenSelect = document.getElementById('puertoOrigen');
+            const puertoDestinoSelect = document.getElementById('puertoDestino');
+            const fechaSalidaInput = document.getElementById('fechaSalida');
+            const fechaRegresoInput = document.getElementById('fechaRegreso');
+            const cruceroIdField = document.getElementById('cruceroId');
+            const cruceroId = cruceroIdField ? cruceroIdField.value : '';
+            const isEdit = cruceroId !== '';
+            
+            let formChanged = false;
+
+            // Detectar cambios en el formulario
+            const formFields = form.querySelectorAll('input, select, textarea');
+            formFields.forEach(field => {
+                field.addEventListener('input', function() {
+                    formChanged = true;
+                });
+            });
+
+            // Validar que las fechas sean coherentes
+            fechaSalidaInput.addEventListener('change', validarFechas);
+            fechaRegresoInput.addEventListener('change', validarFechas);
+
+            function validarFechas() {
+                const fechaSalida = new Date(fechaSalidaInput.value);
+                const fechaRegreso = new Date(fechaRegresoInput.value);
+                
+                if (fechaSalida && fechaRegreso && fechaRegreso <= fechaSalida) {
+                    fechaRegresoInput.classList.add('is-invalid');
+                    // Crear elemento de feedback si no existe
+                    let feedback = fechaRegresoInput.nextElementSibling;
+                    if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                        feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        fechaRegresoInput.parentNode.insertBefore(feedback, fechaRegresoInput.nextSibling);
+                    }
+                    feedback.textContent = 'La fecha de regreso debe ser posterior a la fecha de salida';
+                } else {
+                    fechaRegresoInput.classList.remove('is-invalid');
+                }
+            }
+
+            // Validar que puertos origen y destino sean diferentes
+            puertoOrigenSelect.addEventListener('change', validarPuertos);
+            puertoDestinoSelect.addEventListener('change', validarPuertos);
+
+            function validarPuertos() {
+                const puertoOrigen = puertoOrigenSelect.value;
+                const puertoDestino = puertoDestinoSelect.value;
+                
+                if (puertoOrigen && puertoDestino && puertoOrigen === puertoDestino) {
+                    puertoDestinoSelect.classList.add('is-invalid');
+                    // Crear elemento de feedback si no existe
+                    let feedback = puertoDestinoSelect.nextElementSibling;
+                    if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                        feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        puertoDestinoSelect.parentNode.insertBefore(feedback, puertoDestinoSelect.nextSibling);
+                    }
+                    feedback.textContent = 'El puerto de destino debe ser diferente al puerto de origen';
+                } else {
+                    puertoDestinoSelect.classList.remove('is-invalid');
+                }
+            }
+
+            // Validación en tiempo real para campos requeridos
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid')) {
+                        validateField(this);
+                    }
+                });
+            });
+
+            function validateField(field) {
+                if (field.value.trim() === '') {
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+
+            // Confirmación al enviar el formulario
+            form.addEventListener('submit', function(e) {
+                // Validar campos requeridos
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (input.value.trim() === '') {
+                        input.classList.add('is-invalid');
+                        isValid = false;
+                    }
+                });
+
+                // Validar fechas
+                validarFechas();
+                validarPuertos();
+
+                if (!isValid || fechaRegresoInput.classList.contains('is-invalid') || 
+                    puertoDestinoSelect.classList.contains('is-invalid')) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Datos inválidos',
+                        text: 'Por favor, corrija los errores en el formulario antes de enviar.',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return;
+                }
+
+                e.preventDefault();
+
+                const actionText = isEdit ? 'actualizar' : 'programar';
+                const barcoText = barcoSelect.options[barcoSelect.selectedIndex].text;
+                const origenText = puertoOrigenSelect.options[puertoOrigenSelect.selectedIndex].text;
+                const destinoText = puertoDestinoSelect.options[puertoDestinoSelect.selectedIndex].text;
+
+                Swal.fire({
+                    title: `¿Confirmar ${actionText}?`,
+                    html: `
+                        <div class="text-start">
+                            <p>¿Está seguro de que desea ${actionText} el crucero?</p>
+                            <div class="bg-light p-3 rounded">
+                                <strong>Barco:</strong> ${barcoText}<br>
+                                <strong>Ruta:</strong> ${origenText} → ${destinoText}<br>
+                                <strong>Salida:</strong> ${fechaSalidaInput.value}<br>
+                                <strong>Regreso:</strong> ${fechaRegresoInput.value}
+                            </div>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Sí, ${actionText}`,
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitBtn.classList.add('btn-loading');
+                        setTimeout(() => {
+                            form.submit();
+                        }, 500);
+                    }
+                });
+            });
+
+            // Confirmación al cancelar
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Salir sin guardar?',
+                        text: 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#dc3545',
+                        confirmButtonText: 'Sí, salir',
+                        cancelButtonText: 'Seguir editando',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = cancelBtn.href;
+                        }
+                    });
+                }
+            });
+
+            // Manejo del beforeunload
+            let isSubmitting = false;
+            form.addEventListener('submit', function() {
+                isSubmitting = true;
+            });
+
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged && !isSubmitting) {
+                    e.preventDefault();
+                    e.returnValue = 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -4,9 +4,11 @@ import com.ues.edu.modelo.Pasajero;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import org.springframework.stereotype.Repository;
+import com.ues.edu.interfaces.excel.IListaTotalPasajerosDTO;
+import java.util.List;
 import java.util.Optional;
-
+@Repository
 public interface IPasajeroRepo extends JpaRepository<Pasajero, Integer>{
     
     // Buscar pasajero por email (campo único)
@@ -34,4 +36,18 @@ public interface IPasajeroRepo extends JpaRepository<Pasajero, Integer>{
     // Buscar pasajero por nombre y apellido excluyendo un ID específico
     @Query("SELECT p FROM Pasajero p WHERE LOWER(p.nombre) = LOWER(:nombre) AND LOWER(p.apellido) = LOWER(:apellido) AND p.idPasajero != :id")
     Optional<Pasajero> findByNombreAndApellidoAndIdPasajeroNot(@Param("nombre") String nombre, @Param("apellido") String apellido, @Param("id") Integer id);
+    
+    
+    @Query(value = """
+    		SELECT 
+    id_pasajero,
+    nombre,
+    apellido,
+    email,
+    telefono
+FROM pasajero
+ORDER BY apellido, nombre
+    		""", nativeQuery = true)
+    
+    List<IListaTotalPasajerosDTO> consultaTotalPasajeros();
 }

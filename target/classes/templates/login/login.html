@@ -2,67 +2,411 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión</title>
+    <title>CRUISEMANAGER - Iniciar Sesión</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --teal: #20c997;
+            --light-bg: #f0f4f9;
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #f0f4f9, #d9e4f5);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+        }
+        
         .card {
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            max-width: 400px;
-            margin: 5rem auto;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+        
         .card-header {
-            background: linear-gradient(90deg, #0d6efd, #20c997);
+            background: linear-gradient(90deg, var(--primary-blue), var(--teal));
             color: white;
             font-weight: 600;
-            letter-spacing: 1px;
-            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            font-size: 1.4rem;
             text-align: center;
-            padding: 1rem 0;
+            padding: 1.5rem 2rem;
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-custom {
-            border-radius: 2rem;
-            padding: 0.4rem 1rem;
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
+        
+        .card:hover .card-header::before {
+            left: 100%;
+        }
+        
+        .card-body {
+            padding: 2.5rem;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+        }
+        
+        .logo i {
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .app-subtitle {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
         .form-label {
-            font-weight: 500;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .error {
-            color: red;
+        
+        .form-label i {
+            color: var(--primary-blue);
+            width: 16px;
+        }
+        
+        .form-control {
+            border-radius: 12px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 2px solid #e9ecef;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+            background: white;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 2.5rem;
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+        
+        .form-control:focus + .input-icon {
+            color: var(--primary-blue);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-blue), var(--teal));
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
+        }
+        
+        .alert-success {
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
             font-weight: 500;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        }
+        
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-radius: 12px;
+            padding: 1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
             text-align: center;
+            border: none;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            min-height: 100px;
+            max-height: 150px;
+        }
+        
+        .parallax > use {
+            animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+        }
+        
+        .parallax > use:nth-child(1) {
+            animation-delay: -2s;
+            animation-duration: 7s;
+        }
+        
+        .parallax > use:nth-child(2) {
+            animation-delay: -3s;
+            animation-duration: 10s;
+        }
+        
+        .parallax > use:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 13s;
+        }
+        
+        .parallax > use:nth-child(4) {
+            animation-delay: -5s;
+            animation-duration: 20s;
+        }
+        
+        @keyframes move-forever {
+            0% {
+                transform: translate3d(-90px,0,0);
+            }
+            100% {
+                transform: translate3d(85px,0,0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .card-header {
+                padding: 1.25rem 1.5rem;
+                font-size: 1.2rem;
+            }
+            
+            .logo {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .logo i {
+                font-size: 1.7rem;
+            }
+            
+            .app-title {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
-<div th:if="${param.logout}" class="alert alert-success text-center">
-    Has cerrado sesión correctamente.
-</div>
 
 <body>
-<div class="card">
-    <div class="card-header">🔐 Iniciar Sesión</div>
-    <div class="card-body p-4">
-        <div th:if="${error}" class="error" th:text="${error}"></div>
-        <form th:action="@{/login}" method="post">
-            <div class="mb-3">
-                <label for="username" class="form-label">Usuario</label>
-                <input type="text" name="username" class="form-control" required>
+    <!-- Efecto de olas decorativas -->
+    <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+        viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+        <defs>
+            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+        </defs>
+        <g class="parallax">
+            <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.1)" />
+            <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.2)" />
+            <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+            <use xlink:href="#gentle-wave" x="48" y="7" fill="rgba(255,255,255,0.4)" />
+        </g>
+    </svg>
+
+    <div class="login-container">
+        <!-- Mensaje de logout exitoso -->
+        <div th:if="${param.logout}" class="alert alert-success text-center">
+            <i class="fas fa-check-circle me-2"></i>Has cerrado sesión correctamente.
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-lock me-2"></i>ACCESO AL SISTEMA
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                <input type="password" name="password" class="form-control" required>
+            <div class="card-body">
+                <!-- Logo y título -->
+                <div class="logo-container">
+                    <div class="logo">
+                        <i class="fas fa-ship"></i>
+                    </div>
+                    <h1 class="app-title">CRUISEMANAGER</h1>
+                    <p class="app-subtitle">Sistema de Gestión de Cruceros</p>
+                </div>
+
+                <!-- Mensaje de error -->
+                <div th:if="${error}" class="error">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- Formulario de login -->
+                <form th:action="@{/login}" method="post">
+                    <div class="form-group">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user"></i>Usuario
+                        </label>
+                        <input type="text" name="username" id="username" class="form-control" 
+                               placeholder="Ingresa tu usuario" required>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-key"></i>Contraseña
+                        </label>
+                        <input type="password" name="password" id="password" class="form-control" 
+                               placeholder="Ingresa tu contraseña" required>
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>INICIAR SESIÓN
+                    </button>
+                </form>
+
+                <div class="footer-text">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Acceso restringido al personal autorizado
+                </div>
             </div>
-            <div class="d-flex justify-content-center">
-                <button type="submit" class="btn btn-primary btn-custom">➡️ Entrar</button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Efecto de focus en los campos del formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.form-control');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
