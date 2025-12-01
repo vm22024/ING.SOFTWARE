@@ -8,8 +8,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     <style>
+        /* (Mantén todos los estilos igual) */
         :root {
             --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
             --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
@@ -184,19 +186,6 @@
             </div>
  </div>   <!-- Body de la tabla -->
             <div class="table-container">
-                <!-- Alertas de notificación -->
-                <div th:if="${ok}" class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>
-                    <span th:text="${ok}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                </div>
-                
-                <div th:if="${error}" class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span th:text="${error}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                </div>
-
                 <!-- Tabla de barcos -->
                 <table id="barcosTable" class="table table-striped table-custom">
                     <thead>
@@ -212,23 +201,29 @@
                     <tbody>
                         <tr th:each="b : ${barcos}">
                             <td th:text="${b.idBarco}"></td>
-                            <td th:text="${b.nombre}"></td>
+                            <td>
+                                <i class="fas fa-ship text-primary me-2"></i>
+                                <strong th:text="${b.nombre}"></strong>
+                            </td>
                             <td th:text="${b.naviera.nombre}"></td>
                             <td th:text="${b.modelo.nombre}"></td>
-                            <td th:text="${b.anioConstruccion}"></td>
+                            <td>
+                                <span th:if="${b.anioConstruccion}" th:text="${b.anioConstruccion}"></span>
+                                <span th:unless="${b.anioConstruccion}" class="text-muted">No especificado</span>
+                            </td>
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
-                                    <a th:href="@{'/barcos/' + ${b.idBarco} + '/editar'}" 
+                                    <a th:href="@{'/barcos/editar/' + ${b.idBarco}}" 
                                        class="btn btn-primary btn-primary-sm">
                                         <i class="fas fa-edit"></i>
                                         Editar
                                     </a>
-                                    <form th:action="@{'/barcos/' + ${b.idBarco} + '/eliminar'}" 
+                                    <form th:action="@{'/barcos/eliminar/' + ${b.idBarco}}" 
                                           method="post" 
-                                          class="d-inline">
+                                          class="d-inline eliminar-form"
+                                          th:attr="data-barco-id=${b.idBarco}, data-barco-name=${b.nombre}">
                                         <button type="submit" 
-                                                class="btn btn-danger btn-danger-sm"
-                                                onclick="return confirm('¿Está seguro de que desea eliminar este barco?')">
+                                                class="btn btn-danger btn-danger-sm eliminar-btn">
                                             <i class="fas fa-trash"></i>
                                             Eliminar
                                         </button>
@@ -249,16 +244,97 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
     <script>
-      
+        // Función para obtener parámetros de la URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Función para confirmar eliminación con SweetAlert
+        function confirmarEliminacion(element) {
+            const form = element.closest('.eliminar-form');
+            const barcoId = form.getAttribute('data-barco-id');
+            const barcoName = form.getAttribute('data-barco-name');
+            
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `¿Estás seguro de que deseas eliminar el barco <strong>"${barcoName}"</strong>?<br><br>Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
         $(document).ready(function() {
+            // Verificar parámetros de la URL para mostrar alertas
+            const okParam = getUrlParameter('ok');
+            const errorParam = getUrlParameter('error');
+
+            if (okParam) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: okParam,
+                    confirmButtonColor: '#198754',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didClose: () => {
+                        // Limpiar parámetro de la URL sin recargar
+                        const url = new URL(window.location);
+                        url.searchParams.delete('ok');
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            }
+
+            if (errorParam) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorParam,
+                    confirmButtonColor: '#dc3545',
+                    didClose: () => {
+                        // Limpiar parámetro de la URL sin recargar
+                        const url = new URL(window.location);
+                        url.searchParams.delete('error');
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            }
+
+            // Inicializar DataTables
             $('#barcosTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 },
                 pageLength: 10,
-                responsive: true
+                responsive: true,
+                drawCallback: function(settings) {
+                    // Re-asignar eventos a los botones de eliminar después de que DataTables redibuje la tabla
+                    $('.eliminar-btn').off('click').on('click', function(e) {
+                        e.preventDefault();
+                        confirmarEliminacion(this);
+                    });
+                }
+            });
+            
+            // Asignar eventos a los botones de eliminar
+            $('.eliminar-btn').on('click', function(e) {
+                e.preventDefault();
+                confirmarEliminacion(this);
             });
         });
     </script>

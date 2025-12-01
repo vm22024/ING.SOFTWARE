@@ -11,6 +11,7 @@
 	rel="stylesheet">
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <style>
 /* Variables de colores */
@@ -194,19 +195,44 @@ body {
 }
 
 /* Animaciones */
-@
-keyframes fadeIn {from { opacity:0;
-	transform: translateY(10px);
+@keyframes fadeIn {
+	from { 
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
-to {
-	opacity: 1;
-	transform: translateY(0);
-}
-
-}
 .fade-in {
 	animation: fadeIn 0.5s ease-in-out;
+}
+
+.submit-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.submit-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -235,28 +261,12 @@ to {
 
 			<!-- Body del Formulario -->
 			<div class="form-container">
-				<!-- Alertas de notificación -->
-				<div th:if="${ok}"
-					class="alert alert-success alert-custom alert-dismissible fade show"
-					role="alert">
-					<i class="fas fa-check-circle me-2"></i> <span th:text="${ok}"></span>
-					<button type="button" class="btn-close" data-bs-dismiss="alert"
-						aria-label="Cerrar"></button>
-				</div>
-
-				<div th:if="${error}"
-					class="alert alert-danger alert-custom alert-dismissible fade show"
-					role="alert">
-					<i class="fas fa-exclamation-triangle me-2"></i> <span
-						th:text="${error}"></span>
-					<button type="button" class="btn-close" data-bs-dismiss="alert"
-						aria-label="Cerrar"></button>
-				</div>
-
 				<!-- Formulario -->
 				<form th:object="${reserva}" method="post"
-					th:attr="action=${modo == 'nuevo'} ? '/reservas/guardar' : '/reservas/' + ${reserva.idReserva} + '/editar'"
-					class="row g-4" novalidate>
+					th:action="${modo == 'nuevo'} ? @{/reservas/guardar} : @{/reservas/editar/{id}(id=${reserva.idReserva})}"
+					class="row g-4"
+					id="reservaForm"
+					novalidate>
 
 					<!-- Errores globales -->
 					<div th:if="${#fields.hasGlobalErrors()}" class="col-12">
@@ -273,13 +283,15 @@ to {
 					<div class="col-md-6">
 						<label for="crucero" class="form-label-custom"> <i
 							class="fas fa-ship form-icon"></i> Crucero
-						</label> <select th:field="*{crucero}"
+						</label> 
+						<select th:field="*{crucero}"
 							class="form-select form-select-custom"
 							th:classappend="${#fields.hasErrors('crucero')} ? ' is-invalid'"
 							required>
 							<option value="">-- Seleccione --</option>
 							<option th:each="c : ${cruceros}" th:value="${c.idCrucero}"
-								th:text="${c.barco.nombre + ' / ' + c.puertoOrigen.nombre + ' → ' + c.puertoDestino.nombre}">
+								th:text="${c.barco.nombre + ' / ' + c.puertoOrigen.nombre + ' → ' + c.puertoDestino.nombre}"
+								th:selected="${reserva.crucero != null && reserva.crucero.idCrucero == c.idCrucero}">
 							</option>
 						</select>
 						<div class="invalid-feedback"
@@ -295,13 +307,16 @@ to {
 					<div class="col-md-6">
 						<label for="pasajero" class="form-label-custom"> <i
 							class="fas fa-user form-icon"></i> Pasajero
-						</label> <select th:field="*{pasajero}"
+						</label> 
+						<select th:field="*{pasajero}"
 							class="form-select form-select-custom"
 							th:classappend="${#fields.hasErrors('pasajero')} ? ' is-invalid'"
 							required>
 							<option value="">-- Seleccione --</option>
 							<option th:each="p : ${pasajeros}" th:value="${p.idPasajero}"
-								th:text="${p.nombre + ' ' + p.apellido}"></option>
+								th:text="${p.nombre + ' ' + p.apellido}"
+								th:selected="${reserva.pasajero != null && reserva.pasajero.idPasajero == p.idPasajero}">
+							</option>
 						</select>
 						<div class="invalid-feedback"
 							th:if="${#fields.hasErrors('pasajero')}" th:errors="*{pasajero}"></div>
@@ -309,7 +324,6 @@ to {
 							th:if="${#lists.isEmpty(pasajeros)}">
 							<i class="fas fa-exclamation-triangle me-1"></i> No hay pasajeros
 							registrados.
-
 						</div>
 					</div>
 
@@ -374,14 +388,16 @@ to {
 					<!-- Botones de acción -->
 					<div class="col-12">
 						<div class="btn-group-custom">
-							<button type="submit" class="btn btn-success-custom btn-custom">
+							<button type="submit" 
+							        class="btn btn-success-custom btn-custom"
+							        id="submitBtn">
 								<i class="fas"
 									th:classappend="${modo == 'nuevo'} ? 'fa-plus' : 'fa-save'"></i>
 								<span th:text="${modo == 'nuevo'} ? 'Guardar' : 'Actualizar'"></span>
 							</button>
 							<a th:href="@{/reservas}"
-								class="btn btn-secondary-custom btn-custom"> <i
-								class="fas fa-times"></i> Volver
+								class="btn btn-secondary-custom btn-custom" id="cancelBtn">
+								<i class="fas fa-times"></i> Volver
 							</a>
 						</div>
 					</div>
@@ -393,73 +409,158 @@ to {
 	<!-- JavaScript Libraries -->
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
 	<script>
-        // Validación y mejoras de UX
+        // Función para obtener parámetros de la URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
+            // Verificar parámetros de la URL para mostrar alertas
+            const okParam = getUrlParameter('ok');
+            const errorParam = getUrlParameter('error');
+
+            if (okParam) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: okParam,
+                    confirmButtonColor: '#198754',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didClose: () => {
+                        // Limpiar parámetro de la URL sin recargar
+                        const url = new URL(window.location);
+                        url.searchParams.delete('ok');
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            }
+
+            if (errorParam) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorParam,
+                    confirmButtonColor: '#dc3545',
+                    didClose: () => {
+                        // Limpiar parámetro de la URL sin recargar
+                        const url = new URL(window.location);
+                        url.searchParams.delete('error');
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            }
+
+            // Validación y mejoras de UX
+            const form = document.getElementById('reservaForm');
+            const submitButton = document.getElementById('submitBtn');
+            const cancelButton = document.getElementById('cancelBtn');
             
-            // Validación en tiempo real
-            const inputs = form.querySelectorAll('input[required], select[required]');
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    validateField(this);
+            if (form) {
+                // Validación en tiempo real
+                const inputs = form.querySelectorAll('input[required], select[required]');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', function() {
+                        validateField(this);
+                    });
+                    
+                    input.addEventListener('input', function() {
+                        if (this.classList.contains('is-invalid')) {
+                            validateField(this);
+                        }
+                    });
                 });
                 
-                input.addEventListener('input', function() {
-                    if (this.classList.contains('is-invalid')) {
-                        validateField(this);
-                    }
-                });
-            });
-            
-            function validateField(field) {
-                if (field.value.trim() === '') {
-                    field.classList.add('is-invalid');
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            }
-            
-            // Validación específica para números
-            const numberInputs = form.querySelectorAll('input[type="number"]');
-            numberInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    const min = parseInt(this.getAttribute('min')) || 1;
-                    const max = parseInt(this.getAttribute('max')) || 100;
-                    const value = parseInt(this.value) || 0;
-                    
-                    if (value < min || value > max) {
-                        this.classList.add('is-invalid');
+                function validateField(field) {
+                    if (field.value.trim() === '') {
+                        field.classList.add('is-invalid');
                     } else {
-                        this.classList.remove('is-invalid');
+                        field.classList.remove('is-invalid');
+                    }
+                }
+                
+                // Confirmación antes de salir si hay cambios
+                let formChanged = false;
+                const formFields = form.querySelectorAll('input, select, textarea');
+                
+                formFields.forEach(field => {
+                    const initialValue = field.value;
+                    field.addEventListener('input', function() {
+                        formChanged = true;
+                        window.formChanged = true;
+                    });
+                });
+                
+                // Prevenir que se muestre la advertencia al enviar el formulario
+                form.addEventListener('submit', function() {
+                    formChanged = false;
+                    window.formChanged = false;
+                    // Mostrar loading en el botón
+                    submitButton.classList.add('submit-loading');
+                    submitButton.disabled = true;
+                });
+                
+                // Confirmación al salir con cambios sin guardar
+                window.addEventListener('beforeunload', function(e) {
+                    if (formChanged) {
+                        e.preventDefault();
+                        e.returnValue = '';
                     }
                 });
-            });
-            
-            // Confirmación antes de salir si hay cambios
-            let formChanged = false;
-            const formFields = form.querySelectorAll('input, select, textarea');
-            
-            formFields.forEach(field => {
-                field.addEventListener('input', function() {
-                    formChanged = true;
+                
+                // Validación antes de enviar el formulario
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    const requiredFields = form.querySelectorAll('[required]');
+                    
+                    requiredFields.forEach(field => {
+                        if (field.value.trim() === '') {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Campos requeridos',
+                            text: 'Por favor, complete todos los campos obligatorios con valores válidos',
+                            confirmButtonColor: '#dc3545'
+                        });
+                        
+                        // Re-habilitar el botón
+                        submitButton.classList.remove('submit-loading');
+                        submitButton.disabled = false;
+                    }
                 });
-            });
-            
-            // Confirmación al salir con cambios sin guardar
-            window.addEventListener('beforeunload', function(e) {
-                if (formChanged) {
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
-            
-            const cancelButton = document.querySelector('a[href*="/reservas"]');
+            }
+
+            // Confirmación personalizada para cancelar
             if (cancelButton) {
                 cancelButton.addEventListener('click', function(e) {
-                    if (formChanged && !confirm('Tiene cambios sin guardar. ¿Está seguro de que desea salir?')) {
+                    if (window.formChanged) {
                         e.preventDefault();
+                        Swal.fire({
+                            title: '¿Estás seguro?',
+                            text: 'Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Sí, salir',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = cancelButton.href;
+                            }
+                        });
                     }
                 });
             }
@@ -470,10 +571,8 @@ to {
                 const today = new Date().toISOString().split('T')[0];
                 fechaReservaInput.setAttribute('min', today);
             }
-        });
-        
-
-        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Cálculo automático de camarotes
             const cantidadPersonasInput = document.getElementById('cantidadPersonas');
             const cantidadCamarotesInput = document.getElementById('cantidadCamarotes');
             
@@ -490,15 +589,19 @@ to {
             }
             
             // Calcular camarotes cuando cambia la cantidad de personas
-            cantidadPersonasInput.addEventListener('input', calcularCamarotes);
-            cantidadPersonasInput.addEventListener('change', calcularCamarotes);
-            
-            // Calcular inicialmente si ya hay un valor
-            if (cantidadPersonasInput.value) {
-                calcularCamarotes();
+            if (cantidadPersonasInput && cantidadCamarotesInput) {
+                cantidadPersonasInput.addEventListener('input', calcularCamarotes);
+                cantidadPersonasInput.addEventListener('change', calcularCamarotes);
+                
+                // Calcular inicialmente si ya hay un valor
+                if (cantidadPersonasInput.value) {
+                    calcularCamarotes();
+                }
             }
         });
 
+        // Hacer formChanged global para la confirmación de cancelar
+        window.formChanged = false;
     </script>
 </body>
 </html>
