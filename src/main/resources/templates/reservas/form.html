@@ -234,6 +234,46 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Información del crucero */
+.crucero-info {
+    background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    margin-top: 0.5rem;
+    border-left: 4px solid #0d6efd;
+}
+
+.crucero-info h6 {
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.crucero-info p {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+/* Información de disponibilidad */
+.disponibilidad-info {
+    background: linear-gradient(45deg, #e8f5e8, #f0f8ff);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    margin-top: 0.5rem;
+    border-left: 4px solid #198754;
+}
+
+.disponibilidad-info h6 {
+    color: #198754;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.disponibilidad-info p {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
 </style>
 </head>
 <body>
@@ -282,15 +322,17 @@ body {
 					<!-- Campo: Crucero -->
 					<div class="col-md-6">
 						<label for="crucero" class="form-label-custom"> <i
-							class="fas fa-ship form-icon"></i> Crucero
+							class="fas fa-ship form-icon"></i> Crucero Programado
 						</label> 
 						<select th:field="*{crucero}"
 							class="form-select form-select-custom"
 							th:classappend="${#fields.hasErrors('crucero')} ? ' is-invalid'"
+							id="cruceroSelect"
 							required>
 							<option value="">-- Seleccione --</option>
 							<option th:each="c : ${cruceros}" th:value="${c.idCrucero}"
-								th:text="${c.barco.nombre + ' / ' + c.puertoOrigen.nombre + ' → ' + c.puertoDestino.nombre}"
+								th:text="${c.barco.nombre + ' / ' + c.puertoOrigen.nombre + ' → ' + c.puertoDestino.nombre + ' (' + c.fechaSalida + ')'}"
+								th:attr="data-fecha-salida=${c.fechaSalida}, data-fecha-regreso=${c.fechaRegreso}, data-camarotes-disponibles=${c.camarotesDisponibles}, data-pasajeros-registrados=${c.pasajerosRegistrados}"
 								th:selected="${reserva.crucero != null && reserva.crucero.idCrucero == c.idCrucero}">
 							</option>
 						</select>
@@ -300,6 +342,20 @@ body {
 							th:if="${#lists.isEmpty(cruceros)}">
 							<i class="fas fa-exclamation-triangle me-1"></i> No hay cruceros
 							disponibles.
+						</div>
+						
+						<!-- Información del crucero seleccionado -->
+						<div id="cruceroInfo" class="crucero-info" style="display: none;">
+						    <h6><i class="fas fa-info-circle me-1"></i> Información del Crucero</h6>
+						    <p id="cruceroFechas"></p>
+						    <p id="cruceroRuta"></p>
+						</div>
+						
+						<!-- Información de disponibilidad -->
+						<div id="disponibilidadInfo" class="disponibilidad-info" style="display: none;">
+						    <h6><i class="fas fa-chart-bar me-1"></i> Disponibilidad</h6>
+						    <p id="infoCamarotes"></p>
+						    <p id="infoPasajeros"></p>
 						</div>
 					</div>
 
@@ -360,10 +416,14 @@ body {
 						</label> <input type="date" th:field="*{fechaReserva}"
 							class="form-control form-control-custom"
 							th:classappend="${#fields.hasErrors('fechaReserva')} ? ' is-invalid'"
-							required />
+							required id="fechaReservaInput" />
 						<div class="invalid-feedback"
 							th:if="${#fields.hasErrors('fechaReserva')}"
 							th:errors="*{fechaReserva}"></div>
+						<div class="form-text-custom" id="fechaReservaInfo">
+						    <i class="fas fa-info-circle me-1"></i> 
+						    <span id="fechaReservaText">Seleccione un crucero para ver las fechas disponibles</span>
+						</div>
 					</div>
 
 					<!-- Información adicional -->
@@ -377,8 +437,9 @@ body {
 										<li>La cantidad de camarotes debe ser suficiente para las
 											personas</li>
 										<li>Verifique la disponibilidad del crucero seleccionado</li>
-										<li>La fecha de reserva no puede ser anterior a la fecha
-											actual</li>
+										<li>La fecha de reserva debe ser anterior a la fecha de salida del crucero</li>
+										<li>No se pueden realizar reservas para cruceros que ya han salido</li>
+										<li>La reserva está sujeta a la disponibilidad de camarotes</li>
 									</ul>
 								</div>
 							</div>
@@ -418,6 +479,88 @@ body {
             var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
             var results = regex.exec(location.search);
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Función para formatear fechas
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Función para actualizar las restricciones de fecha según el crucero seleccionado
+        function actualizarRestriccionesFecha() {
+            const cruceroSelect = document.getElementById('cruceroSelect');
+            const fechaReservaInput = document.getElementById('fechaReservaInput');
+            const fechaReservaInfo = document.getElementById('fechaReservaInfo');
+            const fechaReservaText = document.getElementById('fechaReservaText');
+            const cruceroInfo = document.getElementById('cruceroInfo');
+            const cruceroFechas = document.getElementById('cruceroFechas');
+            const cruceroRuta = document.getElementById('cruceroRuta');
+            const disponibilidadInfo = document.getElementById('disponibilidadInfo');
+            const infoCamarotes = document.getElementById('infoCamarotes');
+            const infoPasajeros = document.getElementById('infoPasajeros');
+            
+            const selectedOption = cruceroSelect.options[cruceroSelect.selectedIndex];
+            
+            if (selectedOption.value) {
+                const fechaSalida = selectedOption.getAttribute('data-fecha-salida');
+                const fechaRegreso = selectedOption.getAttribute('data-fecha-regreso');
+                const camarotesDisponibles = parseInt(selectedOption.getAttribute('data-camarotes-disponibles')) || 0;
+                const pasajerosRegistrados = parseInt(selectedOption.getAttribute('data-pasajeros-registrados')) || 0;
+                const textoCrucero = selectedOption.text;
+                
+                // Mostrar información del crucero
+                cruceroInfo.style.display = 'block';
+                cruceroFechas.innerHTML = `<strong>Salida:</strong> ${formatDate(fechaSalida)} | <strong>Regreso:</strong> ${formatDate(fechaRegreso)}`;
+                cruceroRuta.innerHTML = `<strong>Ruta:</strong> ${textoCrucero}`;
+                
+                // Mostrar información de disponibilidad
+                disponibilidadInfo.style.display = 'block';
+                infoCamarotes.innerHTML = `<strong>Camarotes disponibles:</strong> ${camarotesDisponibles}`;
+                infoPasajeros.innerHTML = `<strong>Pasajeros registrados:</strong> ${pasajerosRegistrados}`;
+                
+                // Obtener fecha actual y fecha de salida del crucero
+                const hoy = new Date().toISOString().split('T')[0];
+                const fechaSalidaCrucero = fechaSalida;
+                
+                // Verificar si el crucero ya salió
+                const hoyObj = new Date();
+                const fechaSalidaObj = new Date(fechaSalida);
+                
+                if (fechaSalidaObj < hoyObj) {
+                    // El crucero ya salió, no se pueden hacer reservas
+                    fechaReservaInput.disabled = true;
+                    fechaReservaInput.value = '';
+                    fechaReservaInfo.className = 'form-text-custom text-danger';
+                    fechaReservaText.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i> Este crucero ya ha salido. No se pueden realizar reservas.`;
+                    
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Crucero no disponible',
+                        text: 'El crucero seleccionado ya ha salido. Por favor, seleccione otro crucero.',
+                        confirmButtonColor: '#ffc107'
+                    });
+                } else {
+                    // El crucero está disponible
+                    fechaReservaInput.disabled = false;
+                    fechaReservaInput.setAttribute('min', hoy);
+                    fechaReservaInput.setAttribute('max', fechaSalidaCrucero);
+                    fechaReservaInfo.className = 'form-text-custom text-success';
+                    fechaReservaText.innerHTML = `<i class="fas fa-check-circle me-1"></i> Fechas disponibles: desde hoy hasta ${formatDate(fechaSalidaCrucero)}`;
+                }
+            } else {
+                // No hay crucero seleccionado
+                cruceroInfo.style.display = 'none';
+                disponibilidadInfo.style.display = 'none';
+                fechaReservaInput.disabled = true;
+                fechaReservaInput.value = '';
+                fechaReservaInfo.className = 'form-text-custom';
+                fechaReservaText.innerHTML = `<i class="fas fa-info-circle me-1"></i> Seleccione un crucero para ver las fechas disponibles`;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -461,6 +604,15 @@ body {
             const form = document.getElementById('reservaForm');
             const submitButton = document.getElementById('submitBtn');
             const cancelButton = document.getElementById('cancelBtn');
+            const cruceroSelect = document.getElementById('cruceroSelect');
+            
+            // Inicializar restricciones de fecha
+            actualizarRestriccionesFecha();
+            
+            // Escuchar cambios en el selector de cruceros
+            if (cruceroSelect) {
+                cruceroSelect.addEventListener('change', actualizarRestriccionesFecha);
+            }
             
             if (form) {
                 // Validación en tiempo real
@@ -526,6 +678,30 @@ body {
                         }
                     });
 
+                    // Validación adicional para la fecha de reserva
+                    const fechaReservaInput = document.getElementById('fechaReservaInput');
+                    const cruceroSelect = document.getElementById('cruceroSelect');
+                    const selectedOption = cruceroSelect.options[cruceroSelect.selectedIndex];
+                    
+                    if (selectedOption.value && fechaReservaInput.value) {
+                        const fechaSalida = selectedOption.getAttribute('data-fecha-salida');
+                        const fechaReserva = fechaReservaInput.value;
+                        
+                        if (fechaReserva > fechaSalida) {
+                            fechaReservaInput.classList.add('is-invalid');
+                            isValid = false;
+                            
+                            // Crear mensaje de error personalizado
+                            const existingError = fechaReservaInput.parentNode.querySelector('.custom-invalid-feedback');
+                            if (!existingError) {
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'invalid-feedback custom-invalid-feedback';
+                                errorDiv.textContent = 'La fecha de reserva no puede ser posterior a la fecha de salida del crucero';
+                                fechaReservaInput.parentNode.appendChild(errorDiv);
+                            }
+                        }
+                    }
+
                     if (!isValid) {
                         e.preventDefault();
                         Swal.fire({
@@ -563,13 +739,6 @@ body {
                         });
                     }
                 });
-            }
-            
-            // Establecer fecha mínima como hoy para la fecha de reserva
-            const fechaReservaInput = document.querySelector('input[type="date"]');
-            if (fechaReservaInput) {
-                const today = new Date().toISOString().split('T')[0];
-                fechaReservaInput.setAttribute('min', today);
             }
             
             // Cálculo automático de camarotes
