@@ -449,10 +449,7 @@
                 
                 isCheckingDuplicate = true;
                 
-                // Aquí podrías hacer una llamada AJAX al servidor para verificar duplicados
-                // Por ahora hacemos una simulación
-                
-                // Simular verificación (en un caso real, harías una petición AJAX)
+                // Simulación de verificación de duplicados
                 setTimeout(() => {
                     const esDuplicado = verificarDuplicadoLocalmente(nombre);
                     
@@ -474,8 +471,6 @@
 
             // Función temporal para simular verificación de duplicados
             function verificarDuplicadoLocalmente(nombre) {
-                // En una implementación real, esto sería una llamada AJAX al servidor
-                // que verificaría contra la base de datos
                 const nombresExistentes = [
                     'Puerto de Acajutla', 
                     'Puerto de La Libertad',
@@ -544,33 +539,41 @@
                     return;
                 }
 
-                e.preventDefault(); // Prevenir envío inmediato
-
                 const isEdit = [[${puerto.idPuerto} != null]];
-                const actionText = isEdit ? 'actualizar' : 'crear';
-                const successText = isEdit ? 'actualizado' : 'creado';
+                
+                // Solo mostrar confirmación si estamos editando
+                if (isEdit) {
+                    e.preventDefault(); // Prevenir envío inmediato
+                    
+                    const actionText = 'actualizar';
+                    const successText = 'actualizado';
 
-                Swal.fire({
-                    title: `¿Confirmar ${actionText}?`,
-                    html: `¿Está seguro de que desea ${actionText} el puerto <strong>"${nombre}"</strong>?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#198754',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: `Sí, ${actionText}`,
-                    cancelButtonText: 'Cancelar',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Mostrar loading en el botón
-                        submitBtn.classList.add('btn-loading');
-                        
-                        // Enviar formulario después de un breve delay para mejor UX
-                        setTimeout(() => {
-                            form.submit();
-                        }, 500);
-                    }
-                });
+                    Swal.fire({
+                        title: `¿Confirmar ${actionText}?`,
+                        html: `¿Está seguro de que desea ${actionText} el puerto <strong>"${nombre}"</strong>?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: `Sí, ${actionText}`,
+                        cancelButtonText: 'Cancelar',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Mostrar loading en el botón
+                            submitBtn.classList.add('btn-loading');
+                            
+                            // Enviar formulario después de un breve delay para mejor UX
+                            setTimeout(() => {
+                                form.submit();
+                            }, 500);
+                        }
+                    });
+                } else {
+                    // Para crear, no mostrar confirmación, solo enviar directamente
+                    // Mostrar loading en el botón
+                    submitBtn.classList.add('btn-loading');
+                }
             });
 
             // Confirmación al cancelar con cambios sin guardar
@@ -595,20 +598,7 @@
                 }
             });
 
-            // Manejo elegante del beforeunload sin interferir con el envío del formulario
-            let isSubmitting = false;
             
-            form.addEventListener('submit', function() {
-                isSubmitting = true;
-            });
-
-            window.addEventListener('beforeunload', function(e) {
-                if (formChanged && !isSubmitting) {
-                    e.preventDefault();
-                    e.returnValue = 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
-                    return 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
-                }
-            });
         });
     </script>
 </body>
