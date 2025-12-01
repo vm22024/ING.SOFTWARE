@@ -448,7 +448,7 @@ body {
 
 			<!-- Reportes PDF (solo ADMIN) -->
 			<div class="dashboard-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
-				<a th:href="@{/reportes/excel}" class="dashboard-link">
+				<a th:href="@{/reportes}" class="dashboard-link">
 					<div class="card">
 						<div class="card-header">Reportes PDF</div>
 						<div class="card-body">
