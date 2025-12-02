@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<!-- Created with Jaspersoft Studio version 6.11.0.final using JasperReports Library version 6.11.0-0c4056ccaa4d25a5a8c45672d2f764ea3498bebb  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reservas" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="13acf49e-4913-4d1b-bccc-113817ad15d1">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="naviera25"/>
@@ -53,7 +53,7 @@
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="26" splitType="Stretch">
+		<band height="47" splitType="Stretch">
 			<staticText>
 				<reportElement style="Column header" x="0" y="7" width="92" height="18" forecolor="#000000" uuid="4bf0bd7e-a894-44df-ab71-c1b677a74081">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="10e6cddc-087d-41b6-a9ee-e1d7a8447927"/>
@@ -91,13 +91,14 @@
 				<text><![CDATA[Regreso]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="Column header" x="368" y="7" width="92" height="18" forecolor="#000000" uuid="a166d748-7cfb-47ae-befe-0e4b88ef5efe">
+				<reportElement style="Column header" x="368" y="7" width="92" height="33" forecolor="#000000" uuid="a166d748-7cfb-47ae-befe-0e4b88ef5efe">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6729d872-09a7-45e6-acbc-df6f4dc2944b"/>
 				</reportElement>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
-				<text><![CDATA[camarotes]]></text>
+				<text><![CDATA[camarotes
+disponibles]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="Column header" x="460" y="7" width="92" height="18" forecolor="#000000" uuid="aab6e7ee-d5a0-4740-877b-f634d0f6c7c2">

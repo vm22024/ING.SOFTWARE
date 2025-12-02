@@ -38,16 +38,20 @@ public interface IPasajeroRepo extends JpaRepository<Pasajero, Integer>{
     Optional<Pasajero> findByNombreAndApellidoAndIdPasajeroNot(@Param("nombre") String nombre, @Param("apellido") String apellido, @Param("id") Integer id);
     
     
-    @Query(value = """
-    		SELECT 
-    p.nombre || ' ' || p.apellido as pasajero,
-    COUNT(r.id_reserva) as totalViajes,
-    SUM(r.cantidad_personas) as totalPersonasAtendidas
-FROM pasajero p
-LEFT JOIN reserva r ON p.id_pasajero = r.id_pasajero
-GROUP BY p.id_pasajero, p.nombre, p.apellido
-ORDER BY total_viajes DESC
-    		""", nativeQuery = true)
+	@Query(value = """
+			    		SELECT
+			    p.nombre || ' ' || p.apellido AS pasajero,
+			    COUNT(r.id_reserva) AS totalViajes,
+			    SUM(r.cantidad_personas) AS totalPersonasAtendidas
+			FROM pasajero p
+			LEFT JOIN reserva r ON p.id_pasajero = r.id_pasajero
+			GROUP BY p.id_pasajero, p.nombre, p.apellido
+			HAVING
+			    COUNT(r.id_reserva) > 0
+			    AND SUM(r.cantidad_personas) > 0
+			ORDER BY totalViajes DESC;
+
+			    		""", nativeQuery = true)
     
     List<IListaTotalPasajerosDTO> consultaTotalPasajeros();
 }
