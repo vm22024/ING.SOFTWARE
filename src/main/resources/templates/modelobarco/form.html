@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
-        /* (Mantén todos los estilos CSS anteriores igual) */
         :root {
             --primary-gradient: linear-gradient(90deg, #0d6efd, #20c997);
             --background-gradient: linear-gradient(135deg, #f0f4f9, #d9e4f5);
@@ -219,11 +218,12 @@
     <div class="container my-5">
         <!-- Card Principal -->
         <nav aria-label="breadcrumb">
-				<ol class="breadcrumb">
-					<li class="breadcrumb-item"><a th:href="@{/modelos-barco}"><i class="fas fa-home me-1"></i>Lista de Modelo de Barco</a></li>
-					<li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Modelo de Barco</li>
-				</ol>
-			</nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/modelos-barco}"><i class="fas fa-home me-1"></i>Lista de Modelo de Barco</a></li>
+                <li class="breadcrumb-item active"><i class="fas fa-file-excel me-1"></i>Modelo de Barco</li>
+            </ol>
+        </nav>
+        
         <div class="card main-card fade-in">
             <!-- Header -->
             <div class="card-header card-header-custom">
@@ -286,12 +286,14 @@
                         </label>
                         <input type="number" 
                                th:field="*{capacidadPasajeros}" 
+                               id="capacidadPasajeros"
                                class="form-control form-control-custom"
                                th:classappend="${#fields.hasErrors('capacidadPasajeros')} ? ' is-invalid'"
                                required
                                min="1"
                                max="10000"
-                               placeholder="Ej: 500" />
+                               placeholder="Ej: 500"
+                               oninput="calcularCamarotes()" />
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('capacidadPasajeros')}" th:errors="*{capacidadPasajeros}"></div>
                         <div class="form-text-custom">
                             Número máximo de pasajeros que puede transportar
@@ -306,12 +308,14 @@
                         </label>
                         <input type="number" 
                                th:field="*{totalCamarotes}" 
+                               id="totalCamarotes"
                                class="form-control form-control-custom"
                                th:classappend="${#fields.hasErrors('totalCamarotes')} ? ' is-invalid'"
                                required
                                min="1"
                                max="5000"
-                               placeholder="Ej: 250" />
+                               placeholder="Ej: 250"
+                               readonly />
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('totalCamarotes')}" th:errors="*{totalCamarotes}"></div>
                         <div class="form-text-custom">
                             Número total de camarotes disponibles
@@ -361,6 +365,32 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     
     <script>
+        // Función para calcular camarotes automáticamente (2 pasajeros por camarote)
+        function calcularCamarotes() {
+            const capacidadInput = document.getElementById('capacidadPasajeros');
+            const camarotesInput = document.getElementById('totalCamarotes');
+            
+            if (capacidadInput && camarotesInput) {
+                const capacidad = parseInt(capacidadInput.value);
+                
+                if (!isNaN(capacidad) && capacidad > 0) {
+                    // Calcular camarotes (2 pasajeros por camarote)
+                    const camarotes = Math.ceil(capacidad / 2);
+                    camarotesInput.value = camarotes;
+                    
+                    // Actualizar el campo del formulario para Thymeleaf
+                    if (window.modeloBarcoForm) {
+                        const hiddenField = window.modeloBarcoForm.querySelector('[name="totalCamarotes"]');
+                        if (hiddenField) {
+                            hiddenField.value = camarotes;
+                        }
+                    }
+                } else {
+                    camarotesInput.value = '';
+                }
+            }
+        }
+
         // Función para obtener parámetros de la URL
         function getUrlParameter(name) {
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -370,6 +400,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Calcular camarotes al cargar si ya hay un valor en capacidad
+            const capacidadInput = document.getElementById('capacidadPasajeros');
+            if (capacidadInput && capacidadInput.value) {
+                calcularCamarotes();
+            }
+
             // Verificar parámetros de la URL para mostrar alertas
             const okParam = getUrlParameter('ok');
             const errorParam = getUrlParameter('error');
