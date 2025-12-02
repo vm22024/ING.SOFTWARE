@@ -32,18 +32,36 @@ public interface IReservaRepo extends JpaRepository<Reserva, Integer> {
 	List<IListaReservaCruceroDTO> consultaCrucero();
 
 	@Query(value = """
-			SELECT
-			    c.fecha_salida as fechaSalida,
-			    b.nombre as barco,
-			    p.nombre as puertoSalida,
-			    c.fecha_regreso as fechaRegreso,
-			    c.camarotes_disponibles as camarotesDisponibles,
-			    COUNT(r.id_reserva) as totalReservas
+								SELECT
+			    c.fecha_salida AS fechaSalida,
+			    b.nombre AS barco,
+			    p.nombre AS puertoSalida,
+			    c.fecha_regreso AS fechaRegreso,
+				 (mb.total_camarotes - CEILING(SUM(r.cantidad_personas) / 2)) AS camarotesDisponibles,
+				COUNT(r.id_reserva)  AS totalReservas
+
+
 			FROM crucero_programado c
-			LEFT JOIN reserva r ON c.id_crucero = r.id_crucero
-			INNER JOIN barco b ON c.id_barco = b.id_barco
-			INNER JOIN puerto p ON p.id_puerto = c.id_puerto_origen
-			GROUP BY c.fecha_salida, b.nombre, p.nombre, c.fecha_regreso, c.camarotes_disponibles
-			""", nativeQuery = true)
+			LEFT JOIN reserva r
+			    ON c.id_crucero = r.id_crucero
+			INNER JOIN barco b
+			    ON c.id_barco = b.id_barco
+			INNER JOIN modelo_barco mb
+			    ON b.id_modelo = mb.id_modelo
+			INNER JOIN puerto p
+			    ON p.id_puerto = c.id_puerto_origen
+
+			GROUP BY
+			    c.fecha_salida,
+			    b.nombre,
+			    p.nombre,
+			    c.fecha_regreso,
+			    mb.total_camarotes
+
+			HAVING
+			    SUM(r.cantidad_personas) > 0;
+
+
+									""", nativeQuery = true)
 	List<Object[]> listadoReservarNative();
 }
