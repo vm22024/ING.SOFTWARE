@@ -32,7 +32,7 @@ public class UsuarioController {
         });
     }
 
-    // Listar
+   
     @GetMapping
     public String listar(Model model, @RequestParam(value = "ok", required = false) String ok) {
         List<Usuario> usuarios = usuarioService.listar();
@@ -53,14 +53,14 @@ public class UsuarioController {
         return "usuarios/formulario";
     }
 
-    // Guardar nuevo - CAMBIADO
+    
     @PostMapping
     public String guardar(@Valid @ModelAttribute("usuario") Usuario usuario,
                           BindingResult br,
                           Model model,
                           RedirectAttributes ra) {
 
-        // 🔧 VALIDACIÓN MANUAL para contraseña en CREACIÓN
+        
         if (usuario.getPassword() == null || usuario.getPassword().trim().isEmpty()) {
             br.rejectValue("password", "NotBlank", "La contraseña es obligatoria");
         } else if (usuario.getPassword().length() < 6) {
@@ -79,7 +79,7 @@ public class UsuarioController {
             return "redirect:/usuarios";
 
         } catch (IllegalArgumentException ex) {
-            // Mostrar el mensaje real del error
+           
             String errorMsg = ex.getMessage();
             if (errorMsg.contains("DUI") || errorMsg.contains("dui")) {
                 br.rejectValue("dui", "dui.duplicado", errorMsg);
@@ -88,7 +88,7 @@ public class UsuarioController {
             } else if (errorMsg.contains("contraseña") || errorMsg.contains("password")) {
                 br.rejectValue("password", "password.invalida", errorMsg);
             } else {
-                // Mostrar el error real en lugar del genérico
+                
                 model.addAttribute("error", errorMsg);
             }
             model.addAttribute("esEdicion", false);
@@ -102,7 +102,7 @@ public class UsuarioController {
             return "usuarios/formulario";
 
         } catch (Exception ex) {
-            // Mostrar el error real en lugar del genérico
+           
             String errorMsg = ex.getMessage() != null ? ex.getMessage() : "Error desconocido";
             model.addAttribute("error", "Error: " + errorMsg);
             model.addAttribute("esEdicion", false);
@@ -111,7 +111,7 @@ public class UsuarioController {
         }
     }
 
-    // Editar - CAMBIADO
+   
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable("id") Long id, Model model, RedirectAttributes ra) {
         try {
@@ -201,7 +201,7 @@ public class UsuarioController {
         }
     }
 
-    // Eliminar (sin cambios)
+    
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable("id") Long id, RedirectAttributes ra) {
         try {

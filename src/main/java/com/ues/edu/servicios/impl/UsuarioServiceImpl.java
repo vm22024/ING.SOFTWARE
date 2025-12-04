@@ -44,7 +44,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario usuario = usuarioRepo.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        // === CÓDIGO DE DEBUG ===
+        
         System.out.println("=== DEBUG USERDETAILS ===");
         System.out.println("Usuario: " + usuario.getUsername());
         System.out.println("Activo: " + usuario.isActivo());
@@ -212,7 +212,7 @@ public Usuario guardar(Usuario obj) {
             nombreRol = "ROLE_USER"; // Rol por defecto
         }
         
-        System.out.println("🔍 Buscando rol: " + nombreRol + " para cargo: " + cargo);
+        System.out.println(" Buscando rol: " + nombreRol + " para cargo: " + cargo);
         
         try {
             Rol rol = rolService.buscarPorNombre(nombreRol);

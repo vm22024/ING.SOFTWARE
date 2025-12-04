@@ -21,12 +21,12 @@ public class CruceroProgramadoServiceImpl implements ICruceroProgramadoService {
 
     @Override
     public CruceroProgramado guardar(CruceroProgramado obj) {
-        // 🔽🔽🔽 NUEVO: Inicializar pasajeros en 0 si es nuevo
+       
         if (obj.getIdCrucero() == null) {
             obj.setPasajerosRegistrados(0);
         }
         
-        // 🔽🔽🔽 NUEVO: Calcular camarotes disponibles antes de guardar
+       
         if (obj.getBarco() != null && obj.getBarco().getModelo() != null) {
             int capacidadTotal = obj.getBarco().getModelo().getCapacidadPasajeros();
             int camarotesTotales = capacidadTotal / 2; // 2 pasajeros por camarote
@@ -39,7 +39,7 @@ public class CruceroProgramadoServiceImpl implements ICruceroProgramadoService {
 
     @Override
     public List<CruceroProgramado> listar() {
-        return cruceroRepo.findAllWithRelations(); // Usar el método con JOIN FETCH
+        return cruceroRepo.findAllWithRelations(); 
     }
 
     @Override

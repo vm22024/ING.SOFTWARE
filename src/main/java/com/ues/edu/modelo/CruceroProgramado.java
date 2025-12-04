@@ -42,7 +42,7 @@ public class CruceroProgramado {
     public void calcularCamarotesDisponibles() {
         if (this.barco != null && this.barco.getModelo() != null) {
             int capacidadTotal = this.barco.getModelo().getCapacidadPasajeros();
-            int camarotesTotales = capacidadTotal / 2; // 2 pasajeros por camarote
+            int camarotesTotales = capacidadTotal / 2; 
             this.camarotesDisponibles = camarotesTotales - (this.pasajerosRegistrados / 2);
         }
     }

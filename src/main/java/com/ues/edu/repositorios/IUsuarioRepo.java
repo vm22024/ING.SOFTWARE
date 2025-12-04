@@ -13,7 +13,7 @@ import com.ues.edu.modelo.Usuario;
 
 public interface IUsuarioRepo extends JpaRepository<Usuario, Long> {
 
-    // 🔽🔽🔽 CAMBIO CRÍTICO: Agregar LEFT JOIN FETCH para cargar los roles
+    
     @Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.roles WHERE u.username = :username")
     Optional<Usuario> findByUsername(@Param("username") String username);
 

@@ -13,7 +13,7 @@ import com.ues.edu.modelo.CruceroProgramado;
 @Repository
 public interface ICruceroProgramadoRepo extends JpaRepository<CruceroProgramado, Integer> {
 
-	// Consulta para cargar todas las relaciones necesarias
+
 	@Query("SELECT DISTINCT cp FROM CruceroProgramado cp " + "LEFT JOIN FETCH cp.barco b " + "LEFT JOIN FETCH b.modelo "
 			+ "LEFT JOIN FETCH b.naviera " + "LEFT JOIN FETCH cp.puertoOrigen po " + "LEFT JOIN FETCH po.ciudad "
 			+ "LEFT JOIN FETCH cp.puertoDestino pd " + "LEFT JOIN FETCH pd.ciudad")

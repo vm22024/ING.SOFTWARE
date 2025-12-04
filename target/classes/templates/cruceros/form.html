@@ -379,7 +379,7 @@
                              th:errors="*{puertoDestino.idPuerto}"></div>
                         <div class="form-text-custom">Puerto al que llega el crucero</div>
                     </div>
-<!-- Fila 3: Información de capacidad (solo lectura) -->
+
 <div class="col-md-6">
     <label class="form-label-custom">
         <i class="fas fa-chart-bar form-icon"></i>
@@ -492,20 +492,20 @@
         
         let formChanged = false;
 
-        // 🔽🔽🔽 NUEVO: Establecer fecha mínima para fecha de salida
+       
         const hoy = new Date();
         const manana = new Date(hoy);
         manana.setDate(manana.getDate() + 1);
         
-        // Formatear fechas para input type="date" (YYYY-MM-DD)
+  
         const fechaMinima = manana.toISOString().split('T')[0];
         const fechaHoy = hoy.toISOString().split('T')[0];
         
-        // Establecer fecha mínima en el input
+
         fechaSalidaInput.setAttribute('min', fechaMinima);
         fechaRegresoInput.setAttribute('min', fechaMinima);
 
-        // Detectar cambios en el formulario
+   
         const formFields = form.querySelectorAll('input, select, textarea');
         formFields.forEach(field => {
             field.addEventListener('input', function() {
@@ -513,7 +513,7 @@
             });
         });
 
-        // 🔽🔽🔽 ACTUALIZADO: Validar que las fechas sean coherentes
+        
         fechaSalidaInput.addEventListener('change', validarFechas);
         fechaRegresoInput.addEventListener('change', validarFechas);
 
@@ -556,7 +556,7 @@
             return !hayError;
         }
 
-        // 🔽🔽🔽 NUEVAS FUNCIONES AUXILIARES PARA MENSAJES DE ERROR
+      
         function limpiarMensajesError(input) {
             const feedback = input.nextElementSibling;
             if (feedback && feedback.classList.contains('invalid-feedback')) {
@@ -572,7 +572,7 @@
             input.parentNode.insertBefore(feedback, input.nextSibling);
         }
 
-        // Validar que puertos origen y destino sean diferentes
+        
         puertoOrigenSelect.addEventListener('change', validarPuertos);
         puertoDestinoSelect.addEventListener('change', validarPuertos);
 
@@ -592,7 +592,7 @@
             }
         }
 
-        // Validación en tiempo real para campos requeridos
+       
         const inputs = form.querySelectorAll('input[required], select[required]');
         inputs.forEach(input => {
             input.addEventListener('blur', function() {
@@ -614,7 +614,7 @@
             }
         }
 
-        // 🔽🔽🔽 ACTUALIZADO: Función para actualizar la información de capacidad
+        
         function actualizarInformacionCapacidad() {
             const barcoId = barcoSelect.value;
             const capacidadPasajeros = document.getElementById('capacidadPasajeros');
@@ -650,17 +650,17 @@
             }
         }
 
-        // Actualizar información de capacidad cuando se selecciona un barco
+       
         barcoSelect.addEventListener('change', actualizarInformacionCapacidad);
 
-        // Inicializar la información de capacidad si ya hay un barco seleccionado
+       
         if (barcoSelect.value) {
             actualizarInformacionCapacidad();
         }
 
-        // 🔽🔽🔽 ACTUALIZADO: Confirmación al enviar el formulario
+        
         form.addEventListener('submit', function(e) {
-            // Validar campos requeridos
+           
             let isValid = true;
             inputs.forEach(input => {
                 if (input.value.trim() === '') {
@@ -669,10 +669,10 @@
                 }
             });
 
-            // Validar fechas (incluye validaciones nuevas)
+            
             const fechasValidas = validarFechas();
             
-            // Validar puertos
+            
             const puertosValidos = validarPuertos();
 
             if (!isValid || !fechasValidas || !puertosValidos) {
@@ -702,7 +702,7 @@
             const origenText = puertoOrigenSelect.options[puertoOrigenSelect.selectedIndex].text;
             const destinoText = puertoDestinoSelect.options[puertoDestinoSelect.selectedIndex].text;
             
-            // Mostrar información adicional sobre fechas
+            
             const fechaSalida = new Date(fechaSalidaInput.value);
             const diasRestantes = Math.ceil((fechaSalida - new Date(fechaHoy)) / (1000 * 60 * 60 * 24));
 
@@ -741,7 +741,6 @@
             });
         });
 
-        // Confirmación al cancelar
         cancelBtn.addEventListener('click', function(e) {
             if (formChanged) {
                 e.preventDefault();
@@ -763,7 +762,7 @@
             }
         });
 
-        // Manejo del beforeunload
+     
         let isSubmitting = false;
         form.addEventListener('submit', function() {
             isSubmitting = true;
@@ -776,7 +775,7 @@
             }
         });
 
-        // 🔽🔽🔽 NUEVO: Mostrar mensaje informativo sobre fechas
+      
         mostrarInfoFechas();
 
         function mostrarInfoFechas() {
@@ -796,7 +795,7 @@
                 </div>
             `;
             
-            // Insertar después del campo de fecha de regreso
+            
             const fechaRegresoContainer = fechaRegresoInput.closest('.col-md-3');
             if (fechaRegresoContainer) {
                 fechaRegresoContainer.parentNode.insertBefore(infoFechas, fechaRegresoContainer.nextSibling);
